@@ -1,0 +1,28 @@
+{
+  "name": "typeorm-linq-repository",
+  "version": "0.0.0",
+  "description": "Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IRCraziestTaxi/typeorm-linq-repository.git"
+  },
+  "keywords": [
+    "typeorm",
+    "repository",
+    "linq",
+    "query"
+  ],
+  "author": "IRCraziestTaxi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IRCraziestTaxi/typeorm-linq-repository/issues"
+  },
+  "homepage": "https://github.com/IRCraziestTaxi/typeorm-linq-repository#readme",
+  "devDependencies": {
+    "typeorm": "0.1.0-alpha.10"
+  }
+}

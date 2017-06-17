@@ -1,2 +1,2 @@
 # typeorm-linq-repository
-Wraps TypeORM repository patter and QueryBuilder using fluent, LINQ-style queries.
+Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.
