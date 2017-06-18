@@ -66,7 +66,7 @@ this._userRepository.getOne().where(u => u.email).equal(email);
 As well as include statements:
 
 ```typescript
-this._userRepository.getUserById(id).include(u => u.posts);
+this._userRepository.getById(id).include(u => u.posts);
 ```
 
 If the property "posts" ever changes, you get compile-time errors, ensuring the change is not overlooked in query statements.
@@ -75,30 +75,30 @@ If the property "posts" ever changes, you get compile-time errors, ensuring the 
 Include statements transform the "current property type" on the Query so that where statements and subsequent includes can be executed while maintaining this type safety.
 
 ```typescript
-this._userRepository.getUserById(id).include(u => u.posts).thenInclude(p => p.comments);
+this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments);
 ```
 
 ```typescript
-this._userRepository.getUserById(id).include(u => u.orders).thenInclude(o => o.items).thenInclude(i => i.UPC);
+this._userRepository.getById(id).include(u => u.orders).thenInclude(o => o.items).thenInclude(i => i.UPC);
 ```
 
 You can use conditional statements on the current property type at any point during the include chain:
 
 ```typescript
-this._userRepository.getUserById(id).include(u => u.posts).where(p => p.date).lessThan(date).thenInclude(p => p.comments).where(c => c.date).greaterThan(otherDate);
+this._userRepository.getById(id).include(u => u.posts).where(p => p.date).lessThan(date).thenInclude(p => p.comments).where(c => c.date).greaterThan(otherDate);
 ```
 
 ### Base Type
 You can return to the Query's base type after a sequence of include statements.
 
 ```typescript
-this._userRepository.getUserById(id).include(u => u.posts).thenInclude(p => p.comments).usingBaseType().where(u => u.active).isTrue();
+this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments).usingBaseType().where(u => u.active).isTrue();
 ```
 
 Using `.include()` after one or more `.thenInclude()`s will also return the query to its base type:
 
 ```typescript
-this._userRepository.getUserById(id).include(u => u.posts).thenInclude(p => p.comments).include(u => u.orders).thenInclude(o => o.items);
+this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments).include(u => u.orders).thenInclude(o => o.items);
 ```
 
 ### Ordering Queries
@@ -120,11 +120,11 @@ Queries are transformed into promises whenever you are ready to consume the resu
 Queries can be returned as raw promises:
 
 ```typescript
-this._userRepository.getUserById(id).toPromise();
+this._userRepository.getById(id).toPromise();
 ```
 
 Or invoked as a promise on the spot:
 
 ```typescript
-this._userRepository.getUserById(id).then((user: IUser) => { /* ... */ });
+this._userRepository.getById(id).then((user: IUser) => { /* ... */ });
 ```
