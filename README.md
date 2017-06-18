@@ -104,12 +104,6 @@ this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.commen
 this._userRepository.getById(id).include(u => u.orders).thenInclude(o => o.items).thenInclude(i => i.UPC);
 ```
 
-You can use conditional statements on the current property type at any point during the include chain:
-
-```typescript
-this._userRepository.getById(id).include(u => u.posts).where(p => p.date).lessThan(date).thenInclude(p => p.comments).where(c => c.date).greaterThan(otherDate);
-```
-
 ### Base Type
 You can return to the Query's base type after a sequence of include statements.
 
