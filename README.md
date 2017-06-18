@@ -1,6 +1,20 @@
 # typeorm-linq-repository
 Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.
 
+## Foreword
+
+This is a very young codebase and has not received a lot of testing yet. There will soon be an NPM package after more testing is performed, but in the meantime, you are more than welcome to use it. I only ask that you please submit issues and/or pull requests so that any problems can be straightened out.
+
+### Prerequisites
+
+A few things to note regarding this project:
+
+1. TypeORM, a code-first relational database ORM for typescript, is the foundation of this project. If you are unfamiliar with TypeORM, I strongly suggest that you check it out.
+
+2. This project also relies on ts-simple-nameof, another repository by IRCraziestTaxi. Again, an NPM package for that is coming soon, but in the meantime, you can get the code from the repository and use it wherever you'd like.
+
+3. This project is meant to be used in typescript. The main point of this framework is to gain type safety for queries, which requires the use of typescript. If there is enough demand, a build compatible with javascript will be published, but in the meantime, it is offered as-is.
+
 ## Base Repository
 The BaseRepository takes a class type representing a TypeORM model as its constructor argument.
 
