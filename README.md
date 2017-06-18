@@ -105,16 +105,24 @@ this._userRepository.getById(id).include(u => u.orders).thenInclude(o => o.items
 ```
 
 ### Base Type
-You can return to the Query's base type after a sequence of include statements.
-
-```typescript
-this._userRepository.getAll().include(u => u.posts).thenInclude(p => p.comments).usingBaseType().where(u => u.active).isTrue();
-```
-
 Using `.include()` after one or more `.thenInclude()`s will also return the query to its base type:
 
 ```typescript
 this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments).include(u => u.orders).thenInclude(o => o.items);
+```
+
+Using `.where()`, `.and()`, or `.or()` will do the same thing:
+
+```typescript
+this._userRepository.getAll().include(u => u.posts).thenInclude(p => p.comments).where(u => u.email).equal(email);
+```
+
+### Filtering Included Relationships
+
+`.where()`, `.and()`, and `.or()` do not work on included properties; to filter included relationships, use `.includeWhere()` and `.thenIncludeWhere()`.
+
+```typescript
+this._userRepository.includeWhere(u => u.posts, p => p.date).lessThan(date).thenIncludeWhere(p => p.comments, c => c.date).greaterThan(otherDate);
 ```
 
 ### Ordering Queries

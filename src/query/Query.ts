@@ -7,6 +7,8 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     private _customWhereAlias: string;
     private _getAction: () => Promise<R>;
     private _includeAliasHistory: string[];
+    private _includeWhere: boolean;
+    private _includeWhereProperty: string;
     private _initialAlias: string;
     private _lastAlias: string;
     private _query: QueryBuilder<T>;
@@ -22,6 +24,8 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         this._customWhereAlias = "";
         this._getAction = getAction;
         this._includeAliasHistory = [];
+        this._includeWhere = false;
+        this._includeWhereProperty = "";
         this._initialAlias = queryBuilder.alias;
         this._lastAlias = this._initialAlias;
         this._query = queryBuilder;
@@ -29,11 +33,12 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         this._whereProperty = "";
     }
 
-    public and(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P> {
-        this._whereProperty = nameof<P>(propertySelector);
+    public and(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T> {
+        this._whereProperty = nameof<T>(propertySelector);
         this._whereAction = this._query.andWhere;
         this._customWhereAlias = alias || "";
-        return <IComparableQuery<T, R, P>>this;
+        // Use <T, R, T | P> as opposed to <T, R, T> to appease the compiler.
+        return <IComparableQuery<T, R, T | P>>this;
     }
 
     public catch(rejected: (error: any) => void | Promise<any> | IQuery<any, any>): Promise<any> {
@@ -54,6 +59,15 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
 
     public include<S>(propertySelector: (obj: T) => S | S[], alias?: string): IQuery<T, R, S> {
         return this.includePropertyUsingAlias<S>(propertySelector, this._initialAlias, alias);
+    }
+
+    includeWhere<S extends Object>(propertySelector: (obj: T) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
+        this._includeWhereProperty = nameof<T>(propertySelector);
+        this._whereProperty = nameof<S>(subPropertySelector);
+        this._includeWhere = true;
+        this._lastAlias = this._initialAlias;
+        // Use <T, R, S | P> as opposed to <T, R, S> to appease the compiler.
+        return <IComparableQuery<T, R, S | P>>this;
     }
 
     public isFalse(): IQuery<T, R, P> {
@@ -78,11 +92,12 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         return this.performWhere("!=", value);
     }
 
-    public or(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P> {
-        this._whereProperty = nameof<P>(propertySelector);
+    public or(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T> {
+        this._whereProperty = nameof<T>(propertySelector);
         this._whereAction = this._query.orWhere;
         this._customWhereAlias = alias || "";
-        return <IComparableQuery<T, R, P>>this;
+        // Use <T, R, T | P> as opposed to <T, R, T> to appease the compiler.
+        return <IComparableQuery<T, R, T | P>>this;
     }
 
     public orderBy(propertySelector: (obj: P) => any): IQuery<T, R, P> {
@@ -135,21 +150,23 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         return this.includePropertyUsingAlias<S>(propertySelector, this._lastAlias, alias);
     }
 
+    thenIncludeWhere<S extends Object>(propertySelector: (obj: P) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
+        this._includeWhereProperty = nameof<P>(propertySelector);
+        this._whereProperty = nameof<S>(subPropertySelector);
+        this._includeWhere = true;
+        // Use <T, R, S | P> as opposed to <T, R, S> to appease the compiler.
+        return <IComparableQuery<T, R, S | P>>this;
+    }
+
     public toPromise(): Promise<R> {
         return this._getAction.call(this._query);
     }
 
-    public usingBaseType(): IQuery<T, R, T> {
-        this._lastAlias = this._initialAlias;
-        // Use <T, R, T | P> as opposed to <T, R, T> to appease the compiler.
-        return <IQuery<T, R, T | P>>this;
-    }
-
-    public where(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P> {
-        this._whereProperty = nameof<P>(propertySelector);
+    public where(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T> {
+        this._whereProperty = nameof<T>(propertySelector);
         this._whereAction = this._query.where;
         this._customWhereAlias = alias || "";
-        return <IComparableQuery<T, R, P>>this;
+        return <IComparableQuery<T, R, T | P>>this;
     }
 
     private get whereProperty(): string {
@@ -172,8 +189,20 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     }
 
     private performWhere(operator: string, value: string | number | boolean): IQuery<T, R, P> {
-        let where: string = `${this.whereProperty} ${operator} :value`;
-        this._query = this._whereAction.call(this._query, where, { value: value });
+        if (this._includeWhere) {
+            this._includeWhere = false;
+            let includeProperty: string = `${this._lastAlias}.${this._includeWhereProperty}`;
+            let resultAlias: string = this._lastAlias = this._includeWhereProperty;
+            if (typeof value === "string") {
+                value = `'${value}'`;
+            }
+            let joinCondition: string = `${this._includeWhereProperty}.${this._whereProperty} ${operator} ${value}`;
+            this._query = this._query.leftJoinAndSelect(includeProperty, resultAlias, joinCondition);
+        }
+        else {
+            let where: string = `${this.whereProperty} ${operator} :value`;
+            this._query = this._whereAction.call(this._query, where, { value: value });
+        }
         return this;
     }
 }

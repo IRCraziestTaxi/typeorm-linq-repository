@@ -7,7 +7,7 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
      * @param propertySelector Property selection lambda for property to compare.
      * @param alias Optional custom alias to use in the query's where condition.
      */
-    and(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P>;
+    and(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T>;
     /**
      * Catches an error thrown during the execution of the underlying QueryBuilder's Promise.
      * @param rejected The rejection callback for the error thrown on the underlying QueryBuilder's Promise.
@@ -16,15 +16,21 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
      * Includes the specified navigation property in the queried results.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
-     * @param alias Optional custom alias to use for subsequent where or order conditions.
+     * @param alias Optional custom alias to use for subsequent order conditions.
      */
     include<S>(propertySelector: (obj: T) => S | S[], alias?: string): IQuery<T, R, S>;
+    /**
+     * Includes the specified navigation property in the queried results while filtering included entities on the provided subproperty.
+     * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
+     * @param subPropertySelector Property selection lambda for the subproperty on the included entity on which to filter.
+     */
+    includeWhere<S extends Object>(propertySelector: (obj: T) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S>;
     /**
      * Adds an additional logical OR condition for which to query results.
      * @param propertySelector Property selection lambda for property to compare.
      * @param alias Optional custom alias to use in the query's where condition.
      */
-    or(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P>;
+    or(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T>;
     /**
      * Orders the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
@@ -67,21 +73,23 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
      * Includes a subsequent navigation property in the previously included relationship of type P.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
-     * @param alias Optional alias to use for subsequent where conditions.
+     * @param alias Optional alias to use for subsequent order conditions.
      */
     thenInclude<S>(propertySelector: (obj: P) => S | S[], alias?: string): IQuery<T, R, S>;
+    /**
+     * Includes a subsequent navigation property in the previously included relationship of type P while filtering included entities on the provided subproperty.
+     * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
+     * @param subPropertySelector Property selection lambda for the subproperty on the included entity on which to filter.
+     */
+    thenIncludeWhere<S extends Object>(propertySelector: (obj: P) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S>;
     /**
      * Invokes and returns the Promise to get the underlying QueryBuilder's results.
      */
     toPromise(): Promise<R>;
     /**
-     * Resets the property selection type to the query's base type.
-     */
-    usingBaseType(): IQuery<T, R, T>;
-    /**
      * Filters the query with a conditional statement.
      * @param propertySelector Property selection lambda for property to compare.
      * @param alias Optional custom alias to use in the query's where condition.
      */
-    where(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P>;
+    where(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T>;
 }
