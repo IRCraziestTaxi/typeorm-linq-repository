@@ -114,7 +114,7 @@ this._userRepository.getById(id).include(u => u.posts).where(p => p.date).lessTh
 You can return to the Query's base type after a sequence of include statements.
 
 ```typescript
-this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments).usingBaseType().where(u => u.active).isTrue();
+this._userRepository.getAll().include(u => u.posts).thenInclude(p => p.comments).usingBaseType().where(u => u.active).isTrue();
 ```
 
 Using `.include()` after one or more `.thenInclude()`s will also return the query to its base type:
