@@ -129,7 +129,7 @@ this._userRepository.includeWhere(u => u.posts, p => p.date).lessThan(date).then
 You can order queries in any direction you want and using as many subsequent order statements as needed.
 
 ```typescript
-this._userRepository.getAll().orderBy(u => u.email).thenBy(u => u.username);
+this._userRepository.getAll().orderBy(u => u.lastName).thenBy(u => u.firstName);
 ```
 
 You can use include statements to change the query's property type and order on properties of that child.
