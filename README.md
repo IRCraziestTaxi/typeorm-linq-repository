@@ -85,8 +85,16 @@ this._userRepository.getById(id).include(u => u.posts);
 
 If the property "posts" ever changes, you get compile-time errors, ensuring the change is not overlooked in query statements.
 
-### Current Property Type
-Include statements transform the "current property type" on the Query so that where statements and subsequent includes can be executed while maintaining this type safety.
+### Multiple Includes
+
+You can use `include()` more than once to include several properties on the query's base type:
+
+```typescript
+this._userRepository.getById(id).include(u => u.posts).include(u => u.orders);
+```
+
+### Subsequent Includes and Current Property Type
+Include statements transform the "current property type" on the Query so that where statements and subsequent `thenInclude()`s can be executed while maintaining this type safety.
 
 ```typescript
 this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments);
