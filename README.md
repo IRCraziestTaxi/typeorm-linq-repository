@@ -3,7 +3,7 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 
 ## Foreword
 
-This is a very young codebase and has not received a lot of testing yet. There will soon be an NPM package after more testing is performed, but in the meantime, you are more than welcome to use it. I only ask that you please submit issues and/or pull requests so that any problems can be straightened out.
+This is a work in progress. I am still learning all the intricacies of TypeORM's QueryBuilder, so some things don't work as expected right now. It handles simple `include`s, `thenInclude`s, `where`s, and `orderBy`s very well, but I am still working on the more complex cases. If you do want to use the code, I only ask that you please submit issues and/or pull requests so that any problems can be straightened out.
 
 ### Prerequisites
 
