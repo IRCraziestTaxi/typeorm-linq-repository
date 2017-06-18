@@ -24,5 +24,8 @@
   "homepage": "https://github.com/IRCraziestTaxi/typeorm-linq-repository#readme",
   "devDependencies": {
     "typeorm": "0.1.0-alpha.10"
+  },
+  "peerDependencies": {
+    "typeorm": "0.1.0-alpha.10"
   }
 }
