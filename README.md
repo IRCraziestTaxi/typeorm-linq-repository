@@ -2,8 +2,7 @@
 Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.
 
 ## Foreword
-
-This is a work in progress. I am still learning all the intricacies of TypeORM's QueryBuilder, so complex queries may not work as expected. It handles simple `include`s, `thenInclude`s, `where`s, and `orderBy`s very well and now handles filtering included relationships, but there has not yet been any testing on complicated queries. An NPM package will come soon after a little more testing has been performed. If you do want to clone and use the code, I only ask that you please submit issues and/or pull requests so that any problems can be straightened out.
+This is a work in progress. I am still learning all the intricacies of TypeORM's QueryBuilder, so complex queries may not work as expected. It handles simple `include`s, `thenInclude`s, `where`s, and `orderBy`s very well and now handles filtering included relationships, but there has not yet been any testing on complicated queries. Please submit issues and/or pull requests so that any problems can be straightened out.
 
 ### Prerequisites
 
@@ -11,9 +10,16 @@ A few things to note regarding this project:
 
 1. TypeORM, a code-first relational database ORM for typescript, is the foundation of this project. If you are unfamiliar with TypeORM, I strongly suggest that you check it out.
 
-2. This project also relies on ts-simple-nameof, another repository by IRCraziestTaxi. Again, an NPM package for that is coming soon, but in the meantime, you can get the code from the repository and use it wherever you'd like.
+2. This project also relies on ts-simple-nameof, another repository by IRCraziestTaxi. It consists of one very simple function that parses property names from lambda functions passed into queries.
 
 3. This project is meant to be used in typescript. The main point of this framework is to gain type safety for queries, which requires the use of typescript. If there is enough demand, a build compatible with javascript will be published, but in the meantime, it is offered as-is.
+
+## Installation
+To add typeorm-linq-repository and its dependencies to your project using NPM:
+
+```
+npm install --save typeorm ts-simple-nameof typeorm-linq-repository
+```
 
 ## Base Repository
 RepositoryBase takes a class type representing a TypeORM model as its constructor argument.
@@ -172,7 +178,7 @@ As noted above, `where()` does not work on included properties; to filter includ
 this._userRepository.includeWhere(u => u.posts, p => p.date).lessThan(date).thenIncludeWhere(p => p.comments, c => c.date).greaterThan(otherDate);
 ```
 
-You can also add multiple join conditions to `includeWhere()`s and `thenIncludeWhere()`s using `add()` and `or()`.
+You can also add multiple join conditions to `includeWhere()`s and `thenIncludeWhere()`s using `and()` and `or()`.
 
 ```typescript
 this._userRepository.includeWhere(u => u.posts, p => p.date).lessThan(date).and(p => p.date).greaterThan(otherDate);
@@ -207,7 +213,7 @@ this._userRepository.getById(id).then((user: IUser) => { /* ... */ });
 ```
 
 ### Using TypeORM's Query Builder
-If you encounter an issue or a query which this query wrapper cannot accommodate, you can use the underlying native TypeORM QueryBuilder.
+If you encounter an issue or a query which this query wrapper cannot accommodate, you can use TypeORM's native QueryBuilder.
 
 ```typescript
 this._userRepository.createQueryBuilder("user");
