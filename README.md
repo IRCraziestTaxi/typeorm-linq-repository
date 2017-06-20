@@ -131,18 +131,31 @@ this._userRepository.getAll().where(u => u.isActive).isTrue().and(u => u.lastLog
 ```
 
 The following query conditions are available:
+
 `beginsWith(value: string)`: Finds results where the queried text begins with the supplied string.
+
 `contains(value: string)`: Finds results were the queried text contains the supplied string.
+
 `endsWith(value: string)`: Finds results where the queried text ends with the supplied string.
+
 `equal(value: string | number | boolean)`: Finds results where the queried value is equal to the supplied value.
+
 `greaterThan(value: number)`: Finds results where the queried value is greater than the supplied number.
+
 `greaterThanOrEqual(value: number)`: Finds results where the queried value is greater than or equal to the supplied number.
+
 `isFalse()`: Finds results where the queried boolean value is false.
+
 `isTrue()`: Finds results where the queried boolean value is true.
+
 `lessThan(value: number)`: Finds results where the queried value is less than the supplied number.
+
 `lessThanOrEqual(value: number)`: Finds results where the queried value is less than or equal to the supplied number.
+
 `notEqual(value: string | number | boolean)`: Finds results where the queried value is not equal to the supplied value.
+
 `notNull()`: Finds results where the queried relation is not null.
+
 `null()`: Finds results where the queried relation is null.
 
 Note that using `where()` only works on the query's base type, so using where at any point during the query chain returns the query's type to its base type.
