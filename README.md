@@ -16,7 +16,7 @@ A few things to note regarding this project:
 3. This project is meant to be used in typescript. The main point of this framework is to gain type safety for queries, which requires the use of typescript. If there is enough demand, a build compatible with javascript will be published, but in the meantime, it is offered as-is.
 
 ## Base Repository
-The BaseRepository takes a class type representing a TypeORM model as its constructor argument.
+RepositoryBase takes a class type representing a TypeORM model as its constructor argument.
 
 For example:
 
@@ -42,7 +42,7 @@ export class UserRepository extends RepositoryBase<IUser> implements IUserReposi
 }
 ```
 
-### Injecting BaseRepository
+### Injecting RepositoryBase
 Protip: You can easily make RepositoryBase injectable! For example, using InversifyJS:
 
 ```typescript
@@ -94,39 +94,79 @@ this._userRepository.getById(id).include(u => u.posts).include(u => u.orders);
 ```
 
 ### Subsequent Includes and Current Property Type
-Include statements transform the "current property type" on the Query so that where statements and subsequent `thenInclude()`s can be executed while maintaining this type safety.
+Include statements transform the "current property type" on the Query so that subsequent `thenInclude()`s can be executed while maintaining this type safety.
 
 ```typescript
-this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments);
+this._userRepository.getById(id).include(u => u.orders).thenInclude(o => o.items);
 ```
 
 ```typescript
-this._userRepository.getById(id).include(u => u.orders).thenInclude(o => o.items).thenInclude(i => i.UPC);
+this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments).thenInclude(c => c.user);
+```
+
+You can use `include()` or `thenInclude()` on the same property more than once to subsequently include another relation without duplicating the include in the executed query.
+
+```typescript
+this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments).include(u => u.posts).thenInclude(p => p.subscribedUsers);
 ```
 
 ### Base Type
-Using `.include()` after one or more `.thenInclude()`s will also return the query to its base type:
+The query can be returned to its base type after a sequence of includes using `usingBaseType()`:
+
+```typescript
+this._userRepository.getAll().include(u => u.posts).thenInclude(p => p.comments).usingBaseType().orderBy(u => u.email);
+```
+
+Using `include()` after one or more `thenInclude()`s will also return the query to its base type:
 
 ```typescript
 this._userRepository.getById(id).include(u => u.posts).thenInclude(p => p.comments).include(u => u.orders).thenInclude(o => o.items);
 ```
 
-Using `.where()`, `.and()`, or `.or()` will do the same thing:
+### Filtering Results
+Queries can be filtered on one or more conditions using `where()`, `and()`, and `or()`. Note that, just as with TypeORM's QueryBuilder, using `where()` more than once will overwrite previous `where()`s, so use `and()` and `or()` to add more conditions.
 
 ```typescript
-this._userRepository.getAll().include(u => u.posts).thenInclude(p => p.comments).where(u => u.email).equal(email);
+this._userRepository.getAll().where(u => u.isActive).isTrue().and(u => u.lastLogin).greaterThan(date);
+```
+
+The following query conditions are available:
+`beginsWith(value: string)`: Finds results where the queried text begins with the supplied string.
+`contains(value: string)`: Finds results were the queried text contains the supplied string.
+`endsWith(value: string)`: Finds results where the queried text ends with the supplied string.
+`equal(value: string | number | boolean)`: Finds results where the queried value is equal to the supplied value.
+`greaterThan(value: number)`: Finds results where the queried value is greater than the supplied number.
+`greaterThanOrEqual(value: number)`: Finds results where the queried value is greater than or equal to the supplied number.
+`isFalse()`: Finds results where the queried boolean value is false.
+`isTrue()`: Finds results where the queried boolean value is true.
+`lessThan(value: number)`: Finds results where the queried value is less than the supplied number.
+`lessThanOrEqual(value: number)`: Finds results where the queried value is less than or equal to the supplied number.
+`notEqual(value: string | number | boolean)`: Finds results where the queried value is not equal to the supplied value.
+`notNull()`: Finds results where the queried relation is not null.
+`null()`: Finds results where the queried relation is null.
+
+Note that using `where()` only works on the query's base type, so using where at any point during the query chain returns the query's type to its base type.
+
+```typescript
+this._userRepository.getAll().include(u => u.posts).thenInclude(p => p.comments).where(u => u.isActive).isTrue();
 ```
 
 ### Filtering Included Relationships
 
-`.where()`, `.and()`, and `.or()` do not work on included properties; to filter included relationships, use `.includeWhere()` and `.thenIncludeWhere()`.
+As noted above, `where()` does not work on included properties; to filter included relationships, use `includeWhere()` and `thenIncludeWhere()`.
 
 ```typescript
 this._userRepository.includeWhere(u => u.posts, p => p.date).lessThan(date).thenIncludeWhere(p => p.comments, c => c.date).greaterThan(otherDate);
 ```
 
+You can also add multiple join conditions to `includeWhere()`s and `thenIncludeWhere()`s using `add()` and `or()`.
+
+```typescript
+this._userRepository.includeWhere(u => u.posts, p => p.date).lessThan(date).and(p => p.date).greaterThan(otherDate);
+```
+
 ### Ordering Queries
-You can order queries in any direction you want and using as many subsequent order statements as needed.
+You can order queries in either direction and using as many subsequent order statements as needed.
 
 ```typescript
 this._userRepository.getAll().orderBy(u => u.lastName).thenBy(u => u.firstName);
@@ -151,4 +191,11 @@ Or invoked as a promise on the spot:
 
 ```typescript
 this._userRepository.getById(id).then((user: IUser) => { /* ... */ });
+```
+
+### Using TypeORM's Query Builder
+If you encounter an issue or a query which this query wrapper cannot accommodate, you can use the underlying native TypeORM QueryBuilder.
+
+```typescript
+this._userRepository.createQueryBuilder("user");
 ```

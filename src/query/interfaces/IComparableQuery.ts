@@ -2,6 +2,18 @@ import { IQuery } from "./IQuery";
 
 export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
+     * Finds results where the specified property starts with the provided string (using LIKE 'string%').
+     */
+    beginsWith(value: string): IQuery<T, R, P>;
+    /**
+     * Finds results where the specified property contains the provided string (using LIKE '%string%').
+     */
+    contains(value: string): IQuery<T, R, P>;
+    /**
+     * Finds results where the specified property ends with the provided string (using LIKE '%string').
+     */
+    endsWith(value: string): IQuery<T, R, P>;
+    /**
      * Determines whether the previously selected property is equal to the specified value.
      * @param value The value against which to compare.
      */
@@ -41,4 +53,12 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
      * @param value The value against which to compare.
      */
     notEqual(value: string | number | boolean): IQuery<T, R, P>;
+    /**
+     * Finds results where the specified property is not null.
+     */
+    notNull(): IQuery<T, R, P>;
+    /**
+     * Finds results where the specified property is null.
+     */
+    null(): IQuery<T, R, P>;
 }

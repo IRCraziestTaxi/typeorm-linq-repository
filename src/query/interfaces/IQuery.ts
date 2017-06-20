@@ -1,4 +1,3 @@
-import { QueryBuilder } from "typeorm";
 import { IComparableQuery } from "./IComparableQuery";
 
 export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
@@ -7,7 +6,7 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
      * @param propertySelector Property selection lambda for property to compare.
      * @param alias Optional custom alias to use in the query's where condition.
      */
-    and(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T>;
+    and(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P>;
     /**
      * Catches an error thrown during the execution of the underlying QueryBuilder's Promise.
      * @param rejected The rejection callback for the error thrown on the underlying QueryBuilder's Promise.
@@ -30,7 +29,7 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
      * @param propertySelector Property selection lambda for property to compare.
      * @param alias Optional custom alias to use in the query's where condition.
      */
-    or(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T>;
+    or(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P>;
     /**
      * Orders the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
@@ -86,6 +85,10 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
      * Invokes and returns the Promise to get the underlying QueryBuilder's results.
      */
     toPromise(): Promise<R>;
+    /**
+     * Returns the query to its base type; useful, for instance, for setting order by constraints after a sequence of includes transforms the query's current property type.
+     */
+    usingBaseType(): IQuery<T, R, T>;
     /**
      * Filters the query with a conditional statement.
      * @param propertySelector Property selection lambda for property to compare.
