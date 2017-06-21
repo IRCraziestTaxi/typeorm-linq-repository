@@ -8,7 +8,7 @@ This is a work in progress. I am still learning all the intricacies of TypeORM's
 
 A few things to note regarding this project:
 
-1. TypeORM, a code-first relational database ORM for typescript, is the foundation of this project. If you are unfamiliar with TypeORM, I strongly suggest that you check it out.
+1. [TypeORM](https://github.com/typeorm/typeorm "TypeORM"), a code-first relational database ORM for typescript, is the foundation of this project. If you are unfamiliar with TypeORM, I strongly suggest that you check it out.
 
 2. This project also relies on [ts-simple-nameof](https://github.com/IRCraziestTaxi/ts-simple-nameof "ts-simple-nameof"), another repository by IRCraziestTaxi. It consists of one very simple function that parses property names from lambda functions passed into queries.
 
