@@ -277,7 +277,8 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
 
     private createIncludeWhere(includeProperty: string, includeConditionProperty: string): void {
         let joinProperty: string = `${this._lastAlias}.${includeProperty}`;
-        let joinAlias: string = includeProperty;
+        let joinAlias: string = `${this._lastAlias}_${includeProperty}`;
+        this._lastAlias = joinAlias;
         let joinCondition: string = `${joinAlias}.${includeConditionProperty}`;
         this._queryParts.push(new QueryBuilderPart(
             this._query.leftJoinAndSelect, [joinProperty, joinAlias, joinCondition]
