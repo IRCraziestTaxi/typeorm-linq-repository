@@ -23,7 +23,7 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
      * @param subPropertySelector Property selection lambda for the subproperty on the included entity on which to filter.
      */
-    includeWhere<S extends Object>(propertySelector: (obj: T) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S>;
+    includeWhere<S extends Object>(propertySelector: (obj: T) => S | S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S>;
     /**
      * Adds an additional logical OR condition for which to query results.
      * @param propertySelector Property selection lambda for property to compare.
@@ -80,7 +80,7 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
      * @param subPropertySelector Property selection lambda for the subproperty on the included entity on which to filter.
      */
-    thenIncludeWhere<S extends Object>(propertySelector: (obj: P) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S>;
+    thenIncludeWhere<S extends Object>(propertySelector: (obj: P) => S | S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S>;
     /**
      * Invokes and returns the Promise to get the underlying QueryBuilder's results.
      */
