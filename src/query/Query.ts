@@ -250,6 +250,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         }
         if (this._includeWhere) {
             if (typeof value === "string" && quoteString) {
+                value = value.replace(/'/g, "''");
                 value = `'${value}'`;
             }
             // [QueryBuilder.leftJoinAndSelect, ["alias.includedProperty", "includedProperty", "includedProperty.property"]]
