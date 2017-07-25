@@ -80,8 +80,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         let includeConditionProperty: string = nameof<S>(subPropertySelector);
         this.createIncludeWhere(includeProperty, includeConditionProperty);
         this._includeWhere = true;
-        // Use <T, R, S | P> as opposed to <T, R, S> to appease the compiler.
-        return <IComparableQuery<T, R, S | P>>this;
+        return <IComparableQuery<T, R, S>><any>this;
     }
 
     public isFalse(): IQuery<T, R, P> {
@@ -146,25 +145,25 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         return this;
     }
 
-    public skip(skip: number): IQuery<T, R> {
+    public skip(skip: number): IQuery<T, R, P> {
         if (skip > 0) {
             this._queryParts.push(new QueryBuilderPart(
                 this._query.setFirstResult, [skip]
             ));
         }
-        return <IQuery<T, R, T | P>>this;
+        return this;
     }
 
-    public take(limit: number): IQuery<T, R> {
+    public take(limit: number): IQuery<T, R, P> {
         if (limit > 0) {
             this._queryParts.push(new QueryBuilderPart(
                 this._query.setMaxResults, [limit]
             ));
         }
-        return <IQuery<T, R, T | P>>this;
+        return this;
     }
 
-    public then(resolved: (results: R) => void | Promise<any> | IQuery<any, any>): Promise<any> {
+    public then(resolved: (results: R) => void | Promise<any>): Promise<any> {
         return this.toPromise().then(resolved);
     }
 
@@ -195,8 +194,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         let includeConditionProperty: string = nameof<S>(subPropertySelector);
         this.createIncludeWhere(includeProperty, includeConditionProperty);
         this._includeWhere = true;
-        // Use <T, R, S | P> as opposed to <T, R, S> to appease the compiler.
-        return <IComparableQuery<T, R, S | P>>this;
+        return <IComparableQuery<T, R, S>><any>this;
     }
 
     public toPromise(): Promise<R> {
@@ -210,8 +208,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     }
 
     public usingBaseType(): IQuery<T, R, T> {
-        // Use <T, R, T | P> as opposed to <T, R, T> to appease the compiler.
-        return <IQuery<T, R, T | P>>this;
+        return <IQuery<T, R, T>><any>this;
     }
 
     public where(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T> {
@@ -221,8 +218,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
             this._query.where, [where]
         ));
         this._includeWhere = false;
-        // Use <T, R, T | P> as opposed to <T, R, T> to appease the compiler.
-        return <IComparableQuery<T, R, T | P>>this;
+        return <IComparableQuery<T, R, T>><any>this;
     }
 
     private addIncludeWhereCondition(propertySelector: (obj: P) => any, condition: "AND" | "OR"): void {
@@ -299,7 +295,6 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
                 this._query.leftJoinAndSelect, [queryProperty, customAlias || resultAlias]
             ));
         }
-        // Use <T, R, S | P> as opposed to <T, R, S> to appease the compiler.
-        return <IQuery<T, R, S | P>>this;
+        return <IQuery<T, R, S>><any>this;
     }
 }
