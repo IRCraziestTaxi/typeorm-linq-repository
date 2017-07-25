@@ -46,17 +46,17 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
      * Sets the number of results to skip before taking results from the query.
      * @param skip The number of results to skip.
      */
-    skip(skip: number): IQuery<T, R>;
+    skip(skip: number): IQuery<T, R, P>;
     /**
      * Limits the number of results to take from the query.
      * @param limit The number of results to take.
      */
-    take(limit: number): IQuery<T, R>;
+    take(limit: number): IQuery<T, R, P>;
     /**
      * Executes the query by invoking the Promise to get the underlying QueryBuilder's results.
      * @param resolved The resolution callback for the underlying QueryBuilder's results Promise.
      */
-    then(resolved: (results: R) => void | Promise<any> | IQuery<any, any>): Promise<any>;
+    then(resolved: (results: R) => void | Promise<any>): Promise<any>;
     /**
      * Adds a subsequent ordering to the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
