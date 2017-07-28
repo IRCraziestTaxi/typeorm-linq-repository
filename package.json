@@ -1,8 +1,8 @@
 {
   "name": "typeorm-linq-repository",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.",
-  "main": "index.ts",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -29,5 +29,12 @@
   "peerDependencies": {
     "ts-simple-nameof": "0.0.1",
     "typeorm": "0.1.0-alpha.10"
-  }
+  },
+  "files": [
+    "*.json",
+    "index.js",
+    "index.d.ts",
+    "src/**/*.js",
+    "src/**/*.d.ts"
+  ]
 }

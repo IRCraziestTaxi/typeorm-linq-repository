@@ -4,9 +4,9 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
      * Adds an additional logical AND condition for which to query results.
      * @param propertySelector Property selection lambda for property to compare.
-     * @param alias Optional custom alias to use in the query's where condition.
+     * @param subPropertySelector Optional navigation property on which to perform an inner join.
      */
-    and(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P>;
+    and<S extends Object>(propertySelector: (obj: P) => S, subPropertySelector?: (obj: S) => any): IComparableQuery<T, R, P>;
     /**
      * Catches an error thrown during the execution of the underlying QueryBuilder's Promise.
      * @param rejected The rejection callback for the error thrown on the underlying QueryBuilder's Promise.
@@ -15,9 +15,8 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
      * Includes the specified navigation property in the queried results.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
-     * @param alias Optional custom alias to use for subsequent order conditions.
      */
-    include<S>(propertySelector: (obj: T) => S | S[], alias?: string): IQuery<T, R, S>;
+    include<S>(propertySelector: (obj: T) => S | S[]): IQuery<T, R, S>;
     /**
      * Includes the specified navigation property in the queried results while filtering included entities on the provided subproperty.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
@@ -27,21 +26,19 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
      * Adds an additional logical OR condition for which to query results.
      * @param propertySelector Property selection lambda for property to compare.
-     * @param alias Optional custom alias to use in the query's where condition.
+     * @param subPropertySelector Optional navigation property on which to perform an inner join.
      */
-    or(propertySelector: (obj: P) => any, alias?: string): IComparableQuery<T, R, P>;
+    or<S extends Object>(propertySelector: (obj: P) => S, subPropertySelector?: (obj: S) => any): IComparableQuery<T, R, P>;
     /**
      * Orders the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
-     * @param alias Optional custom alias to use for the order property.
      */
-    orderBy(propertySelector: (obj: P) => any, alias?: string): IQuery<T, R, P>;
+    orderBy(propertySelector: (obj: P) => any): IQuery<T, R, P>;
     /**
      * Orders the query on the specified property in descending order.
      * @param propertySelector Property selection lambda for property on which to sort.
-     * @param alias Optional custom alias to use for the order property.
      */
-    orderByDescending(propertySelector: (obj: P) => any, alias?: string): IQuery<T, R, P>;
+    orderByDescending(propertySelector: (obj: P) => any): IQuery<T, R, P>;
     /**
      * Sets the number of results to skip before taking results from the query.
      * @param skip The number of results to skip.
@@ -60,21 +57,18 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
      * Adds a subsequent ordering to the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
-     * @param alias Optional custom alias to use for the order property.
      */
-    thenBy(propertySelector: (obj: P) => any, alias?: string): IQuery<T, R, P>;
+    thenBy(propertySelector: (obj: P) => any): IQuery<T, R, P>;
     /**
      * Adds a subsequent ordering to the query on the specified property in descending order.
      * @param propertySelector Property selection lambda for property on which to sort.
-     * @param alias Optional custom alias to use for the order property.
      */
-    thenByDescending(propertySelector: (obj: P) => any, alias?: string): IQuery<T, R, P>;
+    thenByDescending(propertySelector: (obj: P) => any): IQuery<T, R, P>;
     /**
      * Includes a subsequent navigation property in the previously included relationship of type P.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
-     * @param alias Optional alias to use for subsequent order conditions.
      */
-    thenInclude<S>(propertySelector: (obj: P) => S | S[], alias?: string): IQuery<T, R, S>;
+    thenInclude<S>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S>;
     /**
      * Includes a subsequent navigation property in the previously included relationship of type P while filtering included entities on the provided subproperty.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
@@ -92,7 +86,7 @@ export interface IQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
      * Filters the query with a conditional statement.
      * @param propertySelector Property selection lambda for property to compare.
-     * @param alias Optional custom alias to use in the query's where condition.
+     * @param subPropertySelector Optional navigation property on which to perform an inner join.
      */
-    where(propertySelector: (obj: T) => any, alias?: string): IComparableQuery<T, R, T>;
+    where<S extends Object>(propertySelector: (obj: T) => S, subPropertySelector?: (obj: S) => any): IComparableQuery<T, R, T>;
 }

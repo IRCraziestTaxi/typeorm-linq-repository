@@ -1,6 +1,12 @@
 # typeorm-linq-repository
 Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.
 
+## What's New
+
+As of version 0.1.0, the compiled JavaScript is published to NPM with type definitions rather than the raw source.
+
+Additionally, inner joins are now supported. See section Inner Joins below.
+
 ## Foreword
 This is a work in progress. I am still learning all the intricacies of TypeORM's QueryBuilder, so complex queries may not work as expected. It handles simple `include`s, `thenInclude`s, `where`s, and `orderBy`s very well and now handles filtering included relationships, but there has not yet been any testing on complicated queries. Please submit issues and/or pull requests so that any problems can be straightened out.
 
@@ -92,7 +98,6 @@ this._userRepository.getById(id).include(u => u.posts);
 If the property "posts" ever changes, you get compile-time errors, ensuring the change is not overlooked in query statements.
 
 ### Multiple Includes
-
 You can use `include()` more than once to include several properties on the query's base type:
 
 ```typescript
@@ -170,8 +175,16 @@ Note that using `where()` only works on the query's base type, so using where at
 this._userRepository.getAll().include(u => u.posts).thenInclude(p => p.comments).where(u => u.isActive).isTrue();
 ```
 
-### Filtering Included Relationships
+### Inner Joins
+`where()`, `and()`, and `or()` can be called with an optional sub-property selector in order to perform an inner join.
 
+```typescript
+this._userRepository.getAll().where(u => u.posts, p => p.isArchived).isTrue();
+
+this._userRepository.getOne().where(u => u.email).equal(email).and(u => u.posts, p => p.isArchived).isFalse();
+```
+
+### Filtering Included Relationships
 As noted above, `where()` does not work on included properties; to filter included relationships, use `includeWhere()` and `thenIncludeWhere()`.
 
 ```typescript
