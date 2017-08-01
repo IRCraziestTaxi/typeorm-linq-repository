@@ -12,13 +12,11 @@ This is a work in progress. I am still learning all the intricacies of TypeORM's
 
 ### Prerequisites
 
-A few things to note regarding this project:
+[TypeORM](https://github.com/typeorm/typeorm "TypeORM"), a code-first relational database ORM for typescript, is the foundation of this project. If you are unfamiliar with TypeORM, I strongly suggest that you check it out.
 
-1. [TypeORM](https://github.com/typeorm/typeorm "TypeORM"), a code-first relational database ORM for typescript, is the foundation of this project. If you are unfamiliar with TypeORM, I strongly suggest that you check it out.
+### Important!
 
-2. This project also relies on [ts-simple-nameof](https://github.com/IRCraziestTaxi/ts-simple-nameof "ts-simple-nameof"), another repository by IRCraziestTaxi. It consists of one very simple function that parses property names from lambda functions passed into queries.
-
-3. This project is meant to be used in typescript. The main point of this framework is to gain type safety for queries, which requires the use of typescript. If there is enough demand, a build compatible with javascript will be published, but in the meantime, it is offered as-is.
+This legacy version (0.1.x) of typeorm-linq-repository is not guaranteed to work with versions of typeorm beyond 0.1.0-alpha.10 and will not work with versions of typeorm starting with 0.1.0-alpha.20. You are advised to upgrade typeorm in order to continue using newer versions of typeorm-linq-repository.
 
 ## Installation
 To add typeorm-linq-repository and its dependencies to your project using NPM:
