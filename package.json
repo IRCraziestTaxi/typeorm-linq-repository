@@ -22,12 +22,13 @@
     "url": "https://github.com/IRCraziestTaxi/typeorm-linq-repository/issues"
   },
   "homepage": "https://github.com/IRCraziestTaxi/typeorm-linq-repository#readme",
+  "dependencies": {
+    "ts-simple-nameof": "1.0.2"
+  },
   "devDependencies": {
-    "ts-simple-nameof": "0.0.1",
     "typeorm": "0.1.0-alpha.10"
   },
   "peerDependencies": {
-    "ts-simple-nameof": "1.0.2",
     "typeorm": "0.1.0-alpha.10"
   },
   "files": [
