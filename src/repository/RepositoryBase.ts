@@ -1,4 +1,4 @@
-import { getConnectionManager, QueryBuilder, Repository } from "typeorm";
+import { getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
 import { IRepositoryBase } from "./interfaces/IRepositoryBase";
 import { IQuery } from "../query/interfaces/IQuery";
 import { Query } from "../query/Query";
@@ -25,12 +25,12 @@ export abstract class RepositoryBase<T extends { id: number }> implements IRepos
         return this.persistOne(entity);
     }
 
-    public createQueryBuilder(alias: string): QueryBuilder<T> {
+    public createQueryBuilder(alias: string): SelectQueryBuilder<T> {
         return this._repository.createQueryBuilder(alias);
     }
 
-    public getAll(alias?: string): IQuery<T, T[]> {
-        let queryBuilder: QueryBuilder<T> = this.createQueryBuilder(alias || "entity");
+    public getAll(): IQuery<T, T[]> {
+        let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
         let query: IQuery<T, T[]> = new Query(
             queryBuilder, queryBuilder.getMany
         );
@@ -39,7 +39,7 @@ export abstract class RepositoryBase<T extends { id: number }> implements IRepos
 
     public getById(id: number): IQuery<T, T> {
         let alias: string = "entity";
-        let queryBuilder: QueryBuilder<T> = this.createQueryBuilder(alias);
+        let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder(alias);
         queryBuilder = queryBuilder.where(`${alias}.id = :id`, { id: id });
         let query: IQuery<T, T> = new Query(
             queryBuilder, queryBuilder.getOne
@@ -47,8 +47,8 @@ export abstract class RepositoryBase<T extends { id: number }> implements IRepos
         return query;
     }
 
-    public getOne(alias?: string): IQuery<T, T> {
-        let queryBuilder: QueryBuilder<T> = this.createQueryBuilder(alias || "entity");
+    public getOne(): IQuery<T, T> {
+        let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
         let query: IQuery<T, T> = new Query(
             queryBuilder, queryBuilder.getOne
         );

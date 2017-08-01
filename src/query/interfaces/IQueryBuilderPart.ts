@@ -1,6 +1,6 @@
-import { QueryBuilder, ObjectLiteral } from "typeorm";
+import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
 export interface IQueryBuilderPart<T extends { id: number }> {
-    queryAction: (...params: any[]) => QueryBuilder<T>;
+    queryAction: (...params: any[]) => SelectQueryBuilder<T>;
     queryParams: [string] | [string, ObjectLiteral] | [number];
 }
