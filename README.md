@@ -22,7 +22,7 @@ This legacy version (0.1.x) of typeorm-linq-repository is not guaranteed to work
 To add typeorm-linq-repository and its dependencies to your project using NPM:
 
 ```
-npm install --save typeorm ts-simple-nameof typeorm-linq-repository
+npm install --save typeorm@0.1.0-alpha.10 typeorm-linq-repository
 ```
 
 ## Base Repository
