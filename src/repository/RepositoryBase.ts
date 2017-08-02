@@ -15,13 +15,13 @@ export abstract class RepositoryBase<T extends { id: number }> implements IRepos
 
     public createMany(entities: T[]): Promise<T[]> {
         entities.forEach((entity: T) => {
-            entity.id = null;
+            entity.id = undefined;
         });
         return this.persistMany(entities);
     }
 
     public createOne(entity: T): Promise<T> {
-        entity.id = null;
+        entity.id = undefined;
         return this.persistOne(entity);
     }
 
