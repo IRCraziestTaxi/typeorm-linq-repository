@@ -219,6 +219,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     }
 
     public usingBaseType(): IQuery<T, R, T> {
+        this._lastAlias = this._initialAlias;
         return <IQuery<T, R, T>><any>this;
     }
 
