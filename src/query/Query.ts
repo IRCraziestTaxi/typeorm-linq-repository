@@ -1,6 +1,6 @@
 import { QueryWhereType } from '../enums/QueryWhereType';
 import { nameof } from "ts-simple-nameof";
-import { ObjectLiteral, QueryBuilder } from "typeorm";
+import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import { IComparableQuery } from './interfaces/IComparableQuery';
 import { IQuery } from "./interfaces/IQuery";
 import { IQueryBuilderPart } from "./interfaces/IQueryBuilderPart";
@@ -11,7 +11,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     private _includeAliasHistory: string[];
     private _initialAlias: string;
     private _lastAlias: string;
-    private _query: QueryBuilder<T>;
+    private _query: SelectQueryBuilder<T>;
     private _queryParts: IQueryBuilderPart<T>[];
     private _queryWhereType: QueryWhereType;
 
@@ -20,7 +20,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
      * @param queryBuilder The QueryBuilder to wrap.
      * @param getAction Either queryBuilder.getOne or queryBuilder.getMany.
      */
-    constructor(queryBuilder: QueryBuilder<T>, getAction: () => Promise<R>) {
+    constructor(queryBuilder: SelectQueryBuilder<T>, getAction: () => Promise<R>) {
         this._getAction = getAction;
         this._includeAliasHistory = [];
         this._initialAlias = queryBuilder.alias;
@@ -219,6 +219,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     }
 
     public usingBaseType(): IQuery<T, R, T> {
+        this._lastAlias = this._initialAlias;
         return <IQuery<T, R, T>><any>this;
     }
 
@@ -298,7 +299,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         // alias_property.conditionProperty
         let joinCondition: string = `${joinAlias}.${joinConditionProperty}`;
 
-        let joinFunction: (property: string, aliasName: string, condition?: string) => QueryBuilder<T> = null;
+        let joinFunction: (property: string, aliasName: string, condition?: string) => SelectQueryBuilder<T> = null;
         if (this._queryWhereType === QueryWhereType.Include) {
             joinFunction = this._query.leftJoinAndSelect;
         }

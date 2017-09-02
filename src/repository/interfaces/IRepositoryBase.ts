@@ -1,4 +1,4 @@
-import { ObjectLiteral, QueryBuilder } from "typeorm";
+import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../../query/interfaces/IQuery";
 
 /**
@@ -18,12 +18,11 @@ export interface IRepositoryBase<T extends { id: number }> {
     /**
      * Gets an instance of a QueryBuilder (useful if the Query returned by this repository does not meet your needs yet).
      */
-    createQueryBuilder(alias: string): QueryBuilder<T>;
+    createQueryBuilder(alias: string): SelectQueryBuilder<T>;
     /**
      * Returns a Query returning a set of results.
-     * @param alias Optional alias for subsequent query conditions.
      */
-    getAll(alias?: string): IQuery<T, T[]>;
+    getAll(): IQuery<T, T[]>;
     /**
      * Finds one entity with the specified ID.
      * @param id The ID of the entity to find.
@@ -31,9 +30,8 @@ export interface IRepositoryBase<T extends { id: number }> {
     getById(id: number): IQuery<T, T>;
     /**
      * Returns a Query returning one entity.
-     * @param alias Optional alias for subsequent query conditions.
      */
-    getOne(alias?: string): IQuery<T, T>;
+    getOne(): IQuery<T, T>;
     /**
      * Persists a set of entities to the database.
      * @param entities The set of entities to persist.
