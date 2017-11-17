@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/IRCraziestTaxi/typeorm-linq-repository#readme",
   "dependencies": {
-    "ts-simple-nameof": "1.0.2"
+    "ts-simple-nameof": "1.1.0"
   },
   "devDependencies": {
     "typeorm": "0.1.0-alpha.33"
