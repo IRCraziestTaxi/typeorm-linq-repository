@@ -1,13 +1,21 @@
 import { QueryWhereType } from "../enums/QueryWhereType";
 import { IComparableQuery } from "./interfaces/IComparableQuery";
 import { IFromQuery } from "./interfaces/IFromQuery";
+import { IJoinedComparableQuery } from "./interfaces/IJoinedComparableQuery";
 import { IQuery } from "./interfaces/IQuery";
 import { IQueryBuilderPart } from "./interfaces/IQueryBuilderPart";
 import { QueryBuilderPart } from "./QueryBuilderPart";
 import { nameof } from "ts-simple-nameof";
 import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
-export class Query<T extends { id: number }, R = T | T[], P = T> implements IQuery<T, R, P>, IComparableQuery<T, R, P>, IFromQuery<T, R, P> {
+export class Query<T extends { id: number }, R = T | T[], P = T> implements IQuery<T, R, P>, IComparableQuery<T, R, P>, IJoinedComparableQuery<T, R, P>, IFromQuery<T, R, P> {
+    private readonly OPERATOR_EQUAL: string = "=";
+    private readonly OPERATOR_GREATER: string = ">";
+    private readonly OPERATOR_GREATER_EQUAL: string = ">=";
+    private readonly OPERATOR_LESS: string = "<";
+    private readonly OPERATOR_LESS_EQUAL: string = "<=";
+    private readonly OPERATOR_NOT_EQUAL: string = "!=";
+
     private _getAction: () => Promise<R>;
     private _includeAliasHistory: string[];
     private _initialAlias: string;
@@ -79,7 +87,11 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     }
 
     public equal(value: string | number | boolean): IQuery<T, R, P> {
-        return this.completeWhere("=", value);
+        return this.completeWhere(this.OPERATOR_EQUAL, value);
+    }
+
+    public equalJoined(selector: (obj: P) => any): IQuery<T, R, P> {
+        return this.completeJoinedWhere(this.OPERATOR_EQUAL, selector);
     }
 
     // TODO: Try removing this any. If not possible, comment above this method stating why any is necessary.
@@ -88,11 +100,19 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     }
 
     public greaterThan(value: number): IQuery<T, R, P> {
-        return this.completeWhere(">", value);
+        return this.completeWhere(this.OPERATOR_GREATER, value);
+    }
+
+    public greaterThanJoined(selector: (obj: P) => any): IQuery<T, R, P> {
+        return this.completeJoinedWhere(this.OPERATOR_GREATER, selector);
     }
 
     public greaterThanOrEqual(value: number): IQuery<T, R, P> {
-        return this.completeWhere(">=", value);
+        return this.completeWhere(this.OPERATOR_GREATER_EQUAL, value);
+    }
+
+    public greaterThanOrEqualJoined(selector: (obj: P) => any): IQuery<T, R, P> {
+        return this.completeJoinedWhere(this.OPERATOR_GREATER_EQUAL, selector);
     }
 
     public in(include: string[] | number[]): IQuery<T, R, P> {
@@ -137,15 +157,27 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     }
 
     public lessThan(value: number): IQuery<T, R, P> {
-        return this.completeWhere("<", value);
+        return this.completeWhere(this.OPERATOR_LESS, value);
+    }
+
+    public lessThanJoined(selector: (obj: P) => any): IQuery<T, R, P> {
+        return this.completeJoinedWhere(this.OPERATOR_LESS, selector);
     }
 
     public lessThanOrEqual(value: number): IQuery<T, R, P> {
-        return this.completeWhere("<=", value);
+        return this.completeWhere(this.OPERATOR_LESS_EQUAL, value);
+    }
+
+    public lessThanOrEqualJoined(selector: (obj: P) => any): IQuery<T, R, P> {
+        return this.completeJoinedWhere(this.OPERATOR_LESS_EQUAL, selector);
     }
 
     public notEqual(value: string | number | boolean): IQuery<T, R, P> {
-        return this.completeWhere("!=", value);
+        return this.completeWhere(this.OPERATOR_NOT_EQUAL, value);
+    }
+
+    public notEqualJoined(selector: (obj: P) => any): IQuery<T, R, P> {
+        return this.completeJoinedWhere(this.OPERATOR_NOT_EQUAL, selector);
     }
 
     public notIn(exclude: string [] | number[]): IQuery<T, R, P> {
@@ -313,6 +345,13 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
             }
         }
         return query.query;
+    }
+
+    private completeJoinedWhere(operator: string, selector: (obj: P) => any): IQuery<T, R, P> {
+        this._queryWhereType = QueryWhereType.InnerJoin;
+        let selectedProperty: string = nameof<P>(selector);
+        let compareValue: string = `${this._lastAlias}.${selectedProperty}`;
+        return this.completeWhere(operator, compareValue);
     }
 
     private completeWhere(operator: string, value: string | number | boolean, quoteString: boolean = true, beginsWith: boolean = false, endsWith: boolean = false): IQuery<T, R, P> {

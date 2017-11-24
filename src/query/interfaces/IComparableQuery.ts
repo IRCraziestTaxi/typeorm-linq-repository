@@ -1,16 +1,17 @@
+import { IJoinedComparableQuery } from "./IJoinedComparableQuery";
 import { IQuery } from "./IQuery";
 
 export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
-     * Finds results where the specified property starts with the provided string (using LIKE 'string%').
+     * Finds results where the specified property starts with the provided string (using LIKE "string%").
      */
     beginsWith(value: string): IQuery<T, R, P>;
     /**
-     * Finds results where the specified property contains the provided string (using LIKE '%string%').
+     * Finds results where the specified property contains the provided string (using LIKE "%string%").
      */
     contains(value: string): IQuery<T, R, P>;
     /**
-     * Finds results where the specified property ends with the provided string (using LIKE '%string').
+     * Finds results where the specified property ends with the provided string (using LIKE "%string").
      */
     endsWith(value: string): IQuery<T, R, P>;
     /**
@@ -59,7 +60,7 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
      * Joins the specified navigation property for where conditions on that property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    join<S extends Object>(propertySelector: (obj: T) => S | S[]): IComparableQuery<T, R, S>;
+    join<S extends Object>(propertySelector: (obj: T) => S | S[]): IJoinedComparableQuery<T, R, S>;
     /**
      * Determines whether the previously selected property is less than the specified value.
      * @param value The value against which to compare.
@@ -99,5 +100,5 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
      * Joins a subsequent navigation property on the previously joined relationship of type P for where conditions on that property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IComparableQuery<T, R, S>;
+    thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IJoinedComparableQuery<T, R, S>;
 }
