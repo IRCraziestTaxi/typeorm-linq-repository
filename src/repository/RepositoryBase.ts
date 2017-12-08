@@ -30,26 +30,26 @@ export abstract class RepositoryBase<T extends { id: number }> implements IRepos
     }
 
     public getAll(): IQuery<T, T[]> {
-        let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
-        let query: IQuery<T, T[]> = new Query(
+        const queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
+        const query: IQuery<T, T[]> = new Query(
             queryBuilder, queryBuilder.getMany
         );
         return query;
     }
 
     public getById(id: number): IQuery<T, T> {
-        let alias: string = "entity";
+        const alias: string = "entity";
         let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder(alias);
         queryBuilder = queryBuilder.where(`${alias}.id = :id`, { id: id });
-        let query: IQuery<T, T> = new Query(
+        const query: IQuery<T, T> = new Query(
             queryBuilder, queryBuilder.getOne
         );
         return query;
     }
 
     public getOne(): IQuery<T, T> {
-        let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
-        let query: IQuery<T, T> = new Query(
+        const queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
+        const query: IQuery<T, T> = new Query(
             queryBuilder, queryBuilder.getOne
         );
         return query;
