@@ -4,6 +4,7 @@ import { IQueryBase } from "./IQueryBase";
 export interface IFromQuery<T extends { id: number }, R = T | T[], P = T> extends IQueryBase<T, R, P> {
     /**
      * Filters the query with a conditional statement based on the last joined entity's type.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to compare.
      * @param subPropertySelector Optional navigation property on which to perform an inner join.
      */

@@ -9,6 +9,10 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
      */
     getAction: () => Promise<R>;
     /**
+     * Gets the underlying initial alias used by the Query's SelectQueryBuilder. Normally only used internally by the Query class for inner Queries.
+     */
+    initialAlias: string;
+    /**
      * Gets the underlying SelectQueryBuilder represented by the Query. Normally only used internally by the Query class for innery Queries.
      */
     query: SelectQueryBuilder<T>;
@@ -18,6 +22,7 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
     queryParts: IQueryBuilderPart<T>[];
     /**
      * Adds an additional logical AND condition for which to query results.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to compare.
      * @param subPropertySelector Optional navigation property on which to perform an inner join.
      */
@@ -29,17 +34,20 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
     catch(rejected: (error: any) => void | Promise<any> | IQuery<any, any>): Promise<any>;
     /**
      * Includes the specified navigation property in the queried results.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
      */
     include<S>(propertySelector: (obj: T) => S | S[]): IQuery<T, R, S>;
     /**
      * Includes the specified navigation property in the queried results while filtering included entities on the provided subproperty.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
      * @param subPropertySelector Property selection lambda for the subproperty on the included entity on which to filter.
      */
     includeWhere<S extends Object>(propertySelector: (obj: T) => S | S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S>;
     /**
      * Joins the specified navigation property without including it in the results (useful for subsequent join conditions).
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
     join<S extends Object>(propertySelector: (obj: T) => S | S[]): IQuery<T, R, S>;
@@ -51,6 +59,7 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
     joinWhere<S extends Object>(propertySelector: (obj: T) => S | S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S>;
     /**
      * Adds an additional logical OR condition for which to query results.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to compare.
      * @param subPropertySelector Optional navigation property on which to perform an inner join.
      */
@@ -92,22 +101,26 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
     thenByDescending(propertySelector: (obj: P) => any): IQuery<T, R, P>;
     /**
      * Includes a subsequent navigation property in the previously included relationship of type P.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
      */
     thenInclude<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S>;
     /**
      * Includes a subsequent navigation property in the previously included relationship of type P while filtering included entities on the provided subproperty.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
      * @param subPropertySelector Property selection lambda for the subproperty on the included entity on which to filter.
      */
     thenIncludeWhere<S extends Object>(propertySelector: (obj: P) => S | S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S>;
     /**
      * Joins a subsequent navigation property on the previously joined relationship of type P without including it in the results (useful for subsequent join conditions).
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
     thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S>;
     /**
      * Joins a subsequent navigation property on the previously joined relationship of type P without including it in the results (useful for subsequent join conditions) while filtering joined entities on the provided subproperty.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      * @param subPropertySelector Property selection lambda for the subproperty on the joined entity on which to filter.
      */

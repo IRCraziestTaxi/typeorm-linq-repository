@@ -21,6 +21,7 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
     equal(value: string | number | boolean): IQuery<T, R, P>;
     /**
      * Joins an unrelated table using a TypeORM entity.
+     * @type {F} The type of the foreign entity to join.
      * @param foreignEntity The TypeORM entity whose table to join.
      */
     from<F extends { id: number }>(foreignEntity: { new (...params: any[]): F; }): IComparableQuery<T, R, F>;
@@ -41,11 +42,13 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
     in(include: string[] | number[]): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected value is contained in the result of values selected from an inner query.
+     * @type {I} The base type of the inner Query.
+     * @type {S} The type of the joined navigation property from the inner query.
      * @param propertySelector The property in the outer query to include in the selected results of the inner query.
      * @param innerQuery The inner query from which to select the specified value.
      * @param selectFromInnerQuery The property to select from the inner query.
      */
-    inSelected<S extends Object>(propertySelector: (obj: T) => any, innerQuery: IQuery<T, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
+    inSelected<I extends { id: number }, S extends Object>(propertySelector: (obj: T) => any, innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected property is false.
      * @param value The value to check for falsity.
@@ -58,6 +61,7 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
     isTrue(): IQuery<T, R, P>;
     /**
      * Joins the specified navigation property for where conditions on that property.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
     join<S extends Object>(propertySelector: (obj: T) => S | S[]): IJoinedComparableQuery<T, R, S>;
@@ -83,11 +87,13 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
     notIn(exclude: string [] | number[]): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected value is not contained in the result of values selected from an inner query.
+     * @type {I} The base type of the inner Query.
+     * @type {S} The type of the joined navigation property from the inner query.
      * @param propertySelector The property in the outer query to exclude from the selected results of the inner query.
      * @param innerQuery The inner query from which to select the specified property.
      * @param selectFromInnerQuery The property to select from the inner query.
      */
-    notInSelected<S extends Object>(propertySelector: (obj: T) => any, innerQuery: IQuery<T, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
+    notInSelected<I extends { id: number }, S extends Object>(propertySelector: (obj: T) => any, innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
     /**
      * Finds results where the specified property is not null.
      */
@@ -98,6 +104,7 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
     null(): IQuery<T, R, P>;
     /**
      * Joins a subsequent navigation property on the previously joined relationship of type P for where conditions on that property.
+     * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
     thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IJoinedComparableQuery<T, R, S>;
