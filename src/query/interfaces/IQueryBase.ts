@@ -1,32 +1,19 @@
 import { IComparableQuery } from "./IComparableQuery";
+import { IJoinedQuery } from "./IJoinedQuery";
 import { IQuery } from "./IQuery";
 import { IQueryBuilderPart } from "./IQueryBuilderPart";
 import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
 
+/**
+ * Base set of operations for all Queries that are not in Comparable mode.
+ */
 export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
-    /**
-     * Gets the underlying database action used by the Query's SelectQueryBuilder. Normally only used internally by the Query class for innery Queries.
-     */
-    getAction: () => Promise<R>;
-    /**
-     * Gets the underlying initial alias used by the Query's SelectQueryBuilder. Normally only used internally by the Query class for inner Queries.
-     */
-    initialAlias: string;
-    /**
-     * Gets the underlying SelectQueryBuilder represented by the Query. Normally only used internally by the Query class for innery Queries.
-     */
-    query: SelectQueryBuilder<T>;
-    /**
-     * Gets the QueryParts used by the Query for the SelectQueryBuilder. Normally only used internally by the Query class for innery Queries.
-     */
-    queryParts: IQueryBuilderPart<T>[];
     /**
      * Adds an additional logical AND condition for which to query results.
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to compare.
-     * @param subPropertySelector Optional navigation property on which to perform an inner join.
      */
-    and<S extends Object>(propertySelector: (obj: P) => S, subPropertySelector?: (obj: S) => any): IComparableQuery<T, R, P>;
+    and<S extends Object>(propertySelector: (obj: P) => S): IComparableQuery<T, R, P>;
     /**
      * Catches an error thrown during the execution of the underlying QueryBuilder's Promise.
      * @param rejected The rejection callback for the error thrown on the underlying QueryBuilder's Promise.
@@ -50,7 +37,7 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    join<S extends Object>(propertySelector: (obj: T) => S | S[]): IQuery<T, R, S>;
+    join<S extends Object>(propertySelector: (obj: T) => S | S[]): IJoinedQuery<T, R, S>;
     /**
      * Joins the specified navigation property without including it in the results (useful for subsequent join conditions) while filtering joined entities on the provided subproperty.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
@@ -61,9 +48,8 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
      * Adds an additional logical OR condition for which to query results.
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to compare.
-     * @param subPropertySelector Optional navigation property on which to perform an inner join.
      */
-    or<S extends Object>(propertySelector: (obj: P) => S, subPropertySelector?: (obj: S) => any): IComparableQuery<T, R, P>;
+    or<S extends Object>(propertySelector: (obj: P) => S): IComparableQuery<T, R, P>;
     /**
      * Orders the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
@@ -117,7 +103,7 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S>;
+    thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IJoinedQuery<T, R, S>;
     /**
      * Joins a subsequent navigation property on the previously joined relationship of type P without including it in the results (useful for subsequent join conditions) while filtering joined entities on the provided subproperty.
      * @type {S} The type of the joined navigation property.

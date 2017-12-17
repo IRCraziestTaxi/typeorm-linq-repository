@@ -1,12 +1,14 @@
 import { IComparableQuery } from "./IComparableQuery";
 import { IQueryBase } from "./IQueryBase";
 
-export interface IFromQuery<T extends { id: number }, R = T | T[], P = T> extends IQueryBase<T, R, P> {
+/**
+ * Allows .where() to use the last joined entity's alias.
+ */
+export interface IJoinedQuery<T extends { id: number }, R = T | T[], P = T> extends IQueryBase<T, R, P> {
     /**
      * Filters the query with a conditional statement based on the last joined entity's type.
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to compare.
-     * @param subPropertySelector Optional navigation property on which to perform an inner join.
      */
-    where<S extends Object>(propertySelector: (obj: P) => S, subPropertySelector?: (obj: S) => any): IComparableQuery<T, R, P>;
+    where<S extends Object>(propertySelector: (obj: P) => S): IComparableQuery<T, R, P>;
 }

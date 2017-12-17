@@ -46,7 +46,7 @@ import { IUser } from "../entities/interfaces/IUser";
 import { User } from "../entities/User";
 
 export class UserRepository extends RepositoryBase<IUser> implements IUserRepository {
-    constructor() {
+    public constructor() {
         super(User);
     }
 }

@@ -1,6 +1,9 @@
 import { IComparableQuery } from "./IComparableQuery";
 import { IQuery } from "./IQuery";
 
+/**
+ * Finalizes the comparing portion of a Query operation by performing comparison with the specified joined value.
+ */
 export interface IJoinedComparableQuery<T extends { id: number }, R = T | T[], P = T> extends IComparableQuery<T, R, P> {
     /**
      * Determines whether the property specified in the last "where" is equal to the specified property on the last joined entity.

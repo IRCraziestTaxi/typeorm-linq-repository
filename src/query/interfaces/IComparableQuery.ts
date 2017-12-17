@@ -1,6 +1,9 @@
 import { IJoinedComparableQuery } from "./IJoinedComparableQuery";
 import { IQuery } from "./IQuery";
 
+/**
+ * Finalizes the comparing portion of a Query operation by performing a basic comparison.
+ */
 export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> {
     /**
      * Finds results where the specified property starts with the provided string (using LIKE "string%").

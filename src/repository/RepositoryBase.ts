@@ -9,7 +9,7 @@ import { Query } from "../query/Query";
 export abstract class RepositoryBase<T extends { id: number }> implements IRepositoryBase<T> {
     protected readonly _repository: Repository<T>;
 
-    constructor(entityType: { new (...params: any[]): T; }) {
+    public constructor(entityType: { new (...params: any[]): T; }) {
         this._repository = getConnectionManager().get().getRepository<T>(entityType);
     }
 
