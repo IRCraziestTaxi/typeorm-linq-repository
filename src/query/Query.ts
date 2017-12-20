@@ -123,8 +123,9 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         return <IComparableQuery<T, R, S>><any>this;
     }
 
-    public inSelected<I extends { id: number }, S extends Object>(propertySelector: (obj: T) => any, innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P> {
-        return this.includeOrExcludeFromInnerQuery(propertySelector, <IQueryInternal<I, R, S>>innerQuery, selectFromInnerQuery, SqlConstants.OPERATOR_IN);
+    // TODO: selectFromInnerQuery should not use type S as its entity type.
+    public inSelected<I extends { id: number }, S extends Object>(innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P> {
+        return this.includeOrExcludeFromInnerQuery(<IQueryInternal<I, R, S>>innerQuery, selectFromInnerQuery, SqlConstants.OPERATOR_IN);
     }
 
     public isFalse(): IQuery<T, R, P> {
@@ -148,6 +149,9 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         // no longer need to check QueryWhereType.InnerJoin in where method.
         // Therefore, safe (?) to use QueryWhereType.InnerJoin in all join methods
         // in order to conditionally set alias in where method(s).
+
+        // TODO: Revisit this; thinking now that QueryWhereType.InnerJoin and QueryBuilderPart parameters
+        // should be checked while doing basic joins in order to defer the conditional join.
 
         this._queryWhereType = QueryWhereType.InnerJoin;
 
@@ -190,8 +194,9 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         return this.completeWhere(SqlConstants.OPERATOR_NOT_IN, `(${exclude.join(", ")})`);
     }
 
-    public notInSelected<I extends { id: number }, S extends Object>(propertySelector: (obj: T) => any, innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P> {
-        return this.includeOrExcludeFromInnerQuery(propertySelector, <IQueryInternal<I, R, S>>innerQuery, selectFromInnerQuery, "NOT IN");
+    // TODO: selectFromInnerQuery should not use type S as its entity type.
+    public notInSelected<I extends { id: number }, S extends Object>(innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P> {
+        return this.includeOrExcludeFromInnerQuery(<IQueryInternal<I, R, S>>innerQuery, selectFromInnerQuery, "NOT IN");
     }
 
     public notNull(): IQuery<T, R, P> {
@@ -286,6 +291,9 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         // Therefore, safe (?) to use QueryWhereType.InnerJoin in all join methods
         // in order to conditionally set alias in where method(s).
 
+        // TODO: Revisit this; thinking now that QueryWhereType.InnerJoin and QueryBuilderPart parameters
+        // should be checked while doing basic joins in order to defer the conditional join.
+
         this._queryWhereType = QueryWhereType.InnerJoin;
 
         return this.joinPropertyUsingAlias(propertySelector, this._lastAlias);
@@ -348,6 +356,9 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
 
         // If dealing with a join or include, the joined property's alias will be at the end of the query params array.
         if (part.queryParams.length) {
+            // TODO: Use last alias instead? Causing additional join conditions
+            // following joins, thenJoins, etc. to fail due to bad alias.
+
             // "includedProperty"
             const joinAlias: string = (<[string]>part.queryParams).pop();
 
@@ -372,7 +383,12 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     ): IComparableQuery<T, R, P> {
         const whereProperty: string = nameof<P>(propertySelector);
 
-        if (this._queryWhereType !== QueryWhereType.Normal) {
+        // A third parameter on the query parameters indicates additional join conditions.
+        // Only add a join condition if performing a conditional join.
+        if (
+            this._queryWhereType !== QueryWhereType.Normal &&
+            this._queryParts[this._queryParts.length - 1].queryParams.length === 3
+        ) {
             this.addJoinCondition(whereProperty, operation);
         }
         // else if (subPropertySelector) {
@@ -507,7 +523,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         ));
     }
 
-    private includeOrExcludeFromInnerQuery<I extends { id: number }, S extends Object>(propertySelector: (obj: T) => any, innerQuery: IQueryInternal<I, R, S>, selectFromInnerQuery: (obj: S) => any, operator: string): IQuery<T, R, P> {
+    private includeOrExcludeFromInnerQuery<I extends { id: number }, S extends Object>(innerQuery: IQueryInternal<I, R, S>, selectFromInnerQuery: (obj: S) => any, operator: string): IQuery<T, R, P> {
         // const selectedProperty: string = nameof<T>(propertySelector);
         // const outerQuerySelected: string = `${this._initialAlias}.${selectedProperty}`;
         const innerQueryProperty: string = nameof<S>(selectFromInnerQuery);
@@ -549,6 +565,10 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         this._lastAlias = resultAlias;
         // If just passing through a chain of possibly already executed includes for semantics, don't execute the include again.
         // Only execute the include if it has not been previously executed.
+
+        // TODO: Check QueryWhereType.InnerJoin here as well as enough QueryBuilderPart parameters
+        // to perform a join with a condition in order to insert this join before that join?
+
         if (!(this._includeAliasHistory.find(a => a === resultAlias))) {
             this._includeAliasHistory.push(resultAlias);
             const queryProperty: string = `${queryAlias}.${propertyName}`;

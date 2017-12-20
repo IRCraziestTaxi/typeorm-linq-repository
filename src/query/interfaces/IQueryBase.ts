@@ -20,6 +20,12 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
      */
     catch(rejected: (error: any) => void | Promise<any> | IQuery<any, any>): Promise<any>;
     /**
+     * Joins an unrelated table using a TypeORM entity.
+     * @type {F} The type of the foreign entity to join.
+     * @param foreignEntity The TypeORM entity whose table to join.
+     */
+    from<F extends { id: number }>(foreignEntity: { new (...params: any[]): F; }): IJoinedQuery<T, R, F>;
+    /**
      * Includes the specified navigation property in the queried results.
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop

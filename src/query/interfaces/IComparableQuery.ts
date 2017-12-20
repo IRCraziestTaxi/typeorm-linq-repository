@@ -47,11 +47,11 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
      * Determines whether the previously selected value is contained in the result of values selected from an inner query.
      * @type {I} The base type of the inner Query.
      * @type {S} The type of the joined navigation property from the inner query.
-     * @param propertySelector The property in the outer query to include in the selected results of the inner query.
      * @param innerQuery The inner query from which to select the specified value.
      * @param selectFromInnerQuery The property to select from the inner query.
      */
-    inSelected<I extends { id: number }, S extends Object>(propertySelector: (obj: T) => any, innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
+    // TODO: selectFromInnerQuery should not use type S as its entity type.
+    inSelected<I extends { id: number }, S extends Object>(innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected property is false.
      * @param value The value to check for falsity.
@@ -92,11 +92,11 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
      * Determines whether the previously selected value is not contained in the result of values selected from an inner query.
      * @type {I} The base type of the inner Query.
      * @type {S} The type of the joined navigation property from the inner query.
-     * @param propertySelector The property in the outer query to exclude from the selected results of the inner query.
      * @param innerQuery The inner query from which to select the specified property.
      * @param selectFromInnerQuery The property to select from the inner query.
      */
-    notInSelected<I extends { id: number }, S extends Object>(propertySelector: (obj: T) => any, innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
+    // TODO: selectFromInnerQuery should not use type S as its entity type.
+    notInSelected<I extends { id: number }, S extends Object>(innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
     /**
      * Finds results where the specified property is not null.
      */

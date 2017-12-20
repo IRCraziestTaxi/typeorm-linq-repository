@@ -9,12 +9,6 @@ import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
  */
 export interface IQuery<T extends { id: number }, R = T | T[], P = T> extends IQueryBase<T, R, P> {
     /**
-     * Joins an unrelated table using a TypeORM entity.
-     * @type {F} The type of the foreign entity to join.
-     * @param foreignEntity The TypeORM entity whose table to join.
-     */
-    from<F extends { id: number }>(foreignEntity: { new (...params: any[]): F; }): IJoinedQuery<T, R, F>;
-    /**
      * Filters the query with a conditional statement based on the query's base type.
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to compare.
