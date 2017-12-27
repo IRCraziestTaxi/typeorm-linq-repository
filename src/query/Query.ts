@@ -118,8 +118,8 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     public includeWhere<S extends Object>(propertySelector: (obj: T) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
         const includeProperty: string = nameof<T>(propertySelector);
         const includeConditionProperty: string = nameof<S>(subPropertySelector);
-        this.createJoinCondition(includeProperty, includeConditionProperty);
         this._queryWhereType = QueryWhereType.Include;
+        this.createJoinCondition(includeProperty, includeConditionProperty);
         return <IComparableQuery<T, R, S>><any>this;
     }
 
@@ -153,7 +153,8 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         // TODO: Revisit this; thinking now that QueryWhereType.InnerJoin and QueryBuilderPart parameters
         // should be checked while doing basic joins in order to defer the conditional join.
 
-        this._queryWhereType = QueryWhereType.InnerJoin;
+        // 2017/12/27 00:20 - Omitting "this._queryWhereType = QueryWhereType.InnerJoin;".
+        // this._queryWhereType = QueryWhereType.InnerJoin;
 
         return this.joinPropertyUsingAlias(propertySelector, this._initialAlias);
     }
@@ -276,8 +277,8 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     public thenIncludeWhere<S extends Object>(propertySelector: (obj: P) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
         const includeProperty: string = nameof<P>(propertySelector);
         const includeConditionProperty: string = nameof<S>(subPropertySelector);
-        this.createJoinCondition(includeProperty, includeConditionProperty);
         this._queryWhereType = QueryWhereType.Include;
+        this.createJoinCondition(includeProperty, includeConditionProperty);
         return <IComparableQuery<T, R, S>><any>this;
     }
 
@@ -294,7 +295,8 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         // TODO: Revisit this; thinking now that QueryWhereType.InnerJoin and QueryBuilderPart parameters
         // should be checked while doing basic joins in order to defer the conditional join.
 
-        this._queryWhereType = QueryWhereType.InnerJoin;
+        // 2017/12/27 00:20 - Omitting "this._queryWhereType = QueryWhereType.InnerJoin;".
+        // this._queryWhereType = QueryWhereType.InnerJoin;
 
         return this.joinPropertyUsingAlias(propertySelector, this._lastAlias);
     }
@@ -359,13 +361,16 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
             // TODO: Use last alias instead? Causing additional join conditions
             // following joins, thenJoins, etc. to fail due to bad alias.
 
+            // 2017/12/26 21:45 - replacing joinAlias with lastAlias.
             // "includedProperty"
-            const joinAlias: string = (<[string]>part.queryParams).pop();
+            // const joinAlias: string = (<[string]>part.queryParams).pop();
+            // TODO: remove variable.
+            const joinAlias: string = this._lastAlias;
 
             // "otherProperty"
             // "includedProperty.property = 'something' <AND/OR> includedProperty.otherProperty" (to be finished in completeWhere())
             joinCondition += ` ${condition} "${joinAlias}"."${whereProperty}"`;
-            (<[string]>part.queryParams).push(joinAlias);
+            // (<[string]>part.queryParams).push(joinAlias);
         }
         // Otherwise, "and" or "or" was called after calling "where" followed by "from", so the condition was the only element in the query params array.
         else {
