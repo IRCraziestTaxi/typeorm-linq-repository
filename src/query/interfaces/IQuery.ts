@@ -1,8 +1,5 @@
 import { IComparableQuery } from "./IComparableQuery";
-import { IJoinedQuery } from "./IJoinedQuery";
 import { IQueryBase } from "./IQueryBase";
-import { IQueryBuilderPart } from "./IQueryBuilderPart";
-import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
 
 /**
  * Basic query operations for Queries that are not in Comparable mode.

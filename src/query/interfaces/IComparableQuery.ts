@@ -1,5 +1,6 @@
 import { IJoinedComparableQuery } from "./IJoinedComparableQuery";
 import { IQuery } from "./IQuery";
+import { ISelectQuery } from "./ISelectQuery";
 
 /**
  * Finalizes the comparing portion of a Query operation by performing a basic comparison.
@@ -45,13 +46,14 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
     in(include: string[] | number[]): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected value is contained in the result of values selected from an inner query.
-     * @type {I} The base type of the inner Query.
-     * @type {S} The type of the joined navigation property from the inner query.
+     * @type {TI} The base type of the inner Query.
+     * @type {RI} The return type of the inner Query.
+     * @type {PI1} The type of the last joined navigation property from the inner Query.
+     * @type {PI2} The type of the joined navigation property from which a property was selected in the inner Query.
      * @param innerQuery The inner query from which to select the specified value.
      * @param selectFromInnerQuery The property to select from the inner query.
      */
-    // TODO: selectFromInnerQuery should not use type S as its entity type.
-    inSelected<I extends { id: number }, S extends Object>(innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
+    inSelected<TI extends { id: number }, RI = TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQuery<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected property is false.
      * @param value The value to check for falsity.
@@ -90,13 +92,14 @@ export interface IComparableQuery<T extends { id: number }, R = T | T[], P = T> 
     notIn(exclude: string [] | number[]): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected value is not contained in the result of values selected from an inner query.
-     * @type {I} The base type of the inner Query.
-     * @type {S} The type of the joined navigation property from the inner query.
+     * @type {TI} The base type of the inner Query.
+     * @type {RI} The return type of the inner Query.
+     * @type {PI1} The type of the last joined navigation property from the inner Query.
+     * @type {PI2} The type of the joined navigation property from which a property was selected in the inner Query.
      * @param innerQuery The inner query from which to select the specified property.
      * @param selectFromInnerQuery The property to select from the inner query.
      */
-    // TODO: selectFromInnerQuery should not use type S as its entity type.
-    notInSelected<I extends { id: number }, S extends Object>(innerQuery: IQuery<I, R, S>, selectFromInnerQuery: (obj: S) => any): IQuery<T, R, P>;
+    notInSelected<TI extends { id: number }, RI = TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQuery<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P>;
     /**
      * Finds results where the specified property is not null.
      */

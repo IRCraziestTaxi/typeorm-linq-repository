@@ -2,6 +2,7 @@ import { IComparableQuery } from "./IComparableQuery";
 import { IJoinedQuery } from "./IJoinedQuery";
 import { IQuery } from "./IQuery";
 import { IQueryBuilderPart } from "./IQueryBuilderPart";
+import { ISelectQuery } from "./ISelectQuery";
 import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
 
 /**
@@ -66,6 +67,11 @@ export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
      * @param propertySelector Property selection lambda for property on which to sort.
      */
     orderByDescending(propertySelector: (obj: P) => any): IQuery<T, R, P>;
+    /**
+     * Selects a property from the last joined entity to select while performing an inner query.
+     * @param propertySelector Property selection lambda for the property to select.
+     */
+    select(propertySelector: (obj: P) => any): ISelectQuery<T, R, P>;
     /**
      * Sets the number of results to skip before taking results from the query.
      * @param skip The number of results to skip.

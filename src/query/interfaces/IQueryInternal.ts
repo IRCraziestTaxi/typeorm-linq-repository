@@ -7,13 +7,9 @@ import { SelectQueryBuilder } from "typeorm";
  */
 export interface IQueryInternal<T extends { id: number }, R = T | T[], P = T> extends IQuery<T, R, P> {
     /**
-     * Gets the underlying database action used by the Query"s SelectQueryBuilder. Normally only used internally by the Query class for innery Queries.
+     * Gets the underlying database action used by the Query's SelectQueryBuilder. Normally only used internally by the Query class for innery Queries.
      */
     getAction: () => Promise<R>;
-    /**
-     * Gets the underlying initial alias used by the Query"s SelectQueryBuilder. Normally only used internally by the Query class for inner Queries.
-     */
-    initialAlias: string;
     /**
      * Gets the underlying SelectQueryBuilder represented by the Query. Normally only used internally by the Query class for innery Queries.
      */
