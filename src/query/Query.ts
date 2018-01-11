@@ -240,7 +240,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     public skip(skip: number): IQuery<T, R, P> {
         if (skip > 0) {
             this._queryParts.push(new QueryBuilderPart(
-                this._query.setFirstResult, [skip]
+                this._query.skip, [skip]
             ));
         }
         return this;
@@ -249,7 +249,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
     public take(limit: number): IQuery<T, R, P> {
         if (limit > 0) {
             this._queryParts.push(new QueryBuilderPart(
-                this._query.setMaxResults, [limit]
+                this._query.take, [limit]
             ));
         }
         return this;

@@ -26,10 +26,10 @@
     "ts-simple-nameof": "1.1.0"
   },
   "devDependencies": {
-    "typeorm": "0.1.0-alpha.33"
+    "typeorm": "^0.1.11"
   },
   "peerDependencies": {
-    "typeorm": "0.1.0-alpha.33"
+    "typeorm": "^0.1.11"
   },
   "files": [
     "*.json",
