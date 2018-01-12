@@ -12,7 +12,7 @@ import { QueryBuilderPart } from "./QueryBuilderPart";
 import { nameof } from "ts-simple-nameof";
 import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
-export class Query<T extends { id: number }, R = T | T[], P = T> implements IQuery<T, R, P>, IJoinedQuery<T, R, P>, IComparableQuery<T, R, P>, IJoinedComparableQuery<T, R, P>, IQueryInternal<T, R, P>, ISelectQueryInternal<T, R, P> {
+export class Query<T extends { id: number }, R extends T | T[], P = T> implements IQuery<T, R, P>, IJoinedQuery<T, R, P>, IComparableQuery<T, R, P>, IJoinedComparableQuery<T, R, P>, IQueryInternal<T, R, P>, ISelectQueryInternal<T, R, P> {
     private _getAction: () => Promise<R>;
     private _includeAliasHistory: string[];
     private _initialAlias: string;
@@ -123,11 +123,11 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         const includeProperty: string = nameof<T>(propertySelector);
         const includeConditionProperty: string = nameof<S>(subPropertySelector);
         this._queryWhereType = QueryWhereType.Include;
-        this.createJoinCondition(includeProperty, includeConditionProperty);
+        this.createJoinCondition(includeProperty, includeConditionProperty, this._initialAlias);
         return <IComparableQuery<T, R, S>><any>this;
     }
 
-    public inSelected<TI extends { id: number }, RI = TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQuery<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P> {
+    public inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQuery<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P> {
         return this.includeOrExcludeFromInnerQuery(<IQueryInternal<TI, RI, PI1>>innerQuery, <ISelectQueryInternal<TI, RI, PI2>>selectFromInnerQuery, SqlConstants.OPERATOR_IN);
     }
 
@@ -166,7 +166,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         const includeProperty: string = nameof<T>(propertySelector);
         const includeConditionProperty: string = nameof<S>(subPropertySelector);
         this._queryWhereType = QueryWhereType.InnerJoin;
-        this.createJoinCondition(includeProperty, includeConditionProperty);
+        this.createJoinCondition(includeProperty, includeConditionProperty, this._initialAlias);
         return <IComparableQuery<T, R, S>><any>this;
     }
 
@@ -198,7 +198,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         return this.completeWhere(SqlConstants.OPERATOR_NOT_IN, `(${exclude.join(", ")})`);
     }
 
-    public notInSelected<TI extends { id: number }, RI = TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQuery<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P> {
+    public notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQuery<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P> {
         return this.includeOrExcludeFromInnerQuery(<IQueryInternal<TI, RI, PI1>>innerQuery, <ISelectQueryInternal<TI, RI, PI2>>selectFromInnerQuery, SqlConstants.OPERATOR_NOT_IN);
     }
 
@@ -285,7 +285,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         const includeProperty: string = nameof<P>(propertySelector);
         const includeConditionProperty: string = nameof<S>(subPropertySelector);
         this._queryWhereType = QueryWhereType.Include;
-        this.createJoinCondition(includeProperty, includeConditionProperty);
+        this.createJoinCondition(includeProperty, includeConditionProperty, this._lastAlias);
         return <IComparableQuery<T, R, S>><any>this;
     }
 
@@ -312,7 +312,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         const includeProperty: string = nameof<P>(propertySelector);
         const includeConditionProperty: string = nameof<S>(subPropertySelector);
         this._queryWhereType = QueryWhereType.InnerJoin;
-        this.createJoinCondition(includeProperty, includeConditionProperty);
+        this.createJoinCondition(includeProperty, includeConditionProperty, this._lastAlias);
         return <IComparableQuery<T, R, S>><any>this;
     }
 
@@ -509,12 +509,12 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         return this;
     }
 
-    private createJoinCondition(joinProperty: string, joinConditionProperty: string): void {
+    private createJoinCondition(joinProperty: string, joinConditionProperty: string, alias: string): void {
         // TODO: Pretty sure this method needs to call joinOrIncludeUsingAlias.
         // Or, more likely, includeWhere, joinWhere, etc. need to call it.
 
         // alias.property
-        const joinPropertyFull: string = `${this._lastAlias}.${joinProperty}`;
+        const joinPropertyFull: string = `${alias}.${joinProperty}`;
         // alias_property
         const joinAlias: string = `${this._lastAlias}_${joinProperty}`;
         // TODO: Do we need to be setting last alias here?
@@ -535,7 +535,7 @@ export class Query<T extends { id: number }, R = T | T[], P = T> implements IQue
         ));
     }
 
-    private includeOrExcludeFromInnerQuery<TI extends { id: number }, RI = TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQueryInternal<TI, RI, PI1>, selectFromInnerQuery: ISelectQueryInternal<TI, RI, PI2>, operator: string): IQuery<T, R, P> {
+    private includeOrExcludeFromInnerQuery<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQueryInternal<TI, RI, PI1>, selectFromInnerQuery: ISelectQueryInternal<TI, RI, PI2>, operator: string): IQuery<T, R, P> {
         innerQuery.queryParts.unshift(new QueryBuilderPart(
             innerQuery.query.select, [selectFromInnerQuery.selected]
         ));

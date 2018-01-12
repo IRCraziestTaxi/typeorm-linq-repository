@@ -8,7 +8,7 @@ import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
 /**
  * Base set of operations for all Queries that are not in Comparable mode.
  */
-export interface IQueryBase<T extends { id: number }, R = T | T[], P = T> {
+export interface IQueryBase<T extends { id: number }, R extends T | T[], P = T> {
     /**
      * Adds an additional logical AND condition for which to query results.
      * @type {S} The type of the joined navigation property.
