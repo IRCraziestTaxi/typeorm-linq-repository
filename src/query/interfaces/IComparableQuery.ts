@@ -12,7 +12,7 @@ export interface IComparableQuery<T extends { id: number }, R extends T | T[], P
      * @type {F} The type of the foreign entity to join.
      * @param foreignEntity The TypeORM entity whose table to join.
      */
-    from<F extends { id: number }>(foreignEntity: { new (...params: any[]): F; }): IComparableQuery<T, R, F>;
+    from<F extends { id: number }>(foreignEntity: { new (...params: any[]): F; }): IJoinedComparableQuery<T, R, F>;
     /**
      * Joins the specified navigation property for where conditions on that property.
      * @type {S} The type of the joined navigation property.

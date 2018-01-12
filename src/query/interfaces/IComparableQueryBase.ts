@@ -23,7 +23,6 @@ export interface IComparableQueryBase<T extends { id: number }, Q extends IQuery
      */
     equal(value: string | number | boolean): Q;
     /**
-    /**
      * Determines whether the previously selected property is greater than the specified value.
      * @param value The value against which to compare.
      */
