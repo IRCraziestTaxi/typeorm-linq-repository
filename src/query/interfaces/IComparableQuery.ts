@@ -1,12 +1,13 @@
-import { IQueryBase } from "./IQueryBase";
+import { IComparableQueryBase } from "./IComparableQueryBase";
 import { IJoinedComparableQuery } from "./IJoinedComparableQuery";
 import { IQuery } from "./IQuery";
+import { IQueryBase } from "./IQueryBase";
 import { ISelectQuery } from "./ISelectQuery";
 
 /**
  * Finalizes the comparison portion of a Query operation or joins a relation or foreign entity against which to compare a value.
  */
-export interface IComparableQuery<T extends { id: number }, R extends T | T[], P = T> {
+export interface IComparableQuery<T extends { id: number }, R extends T | T[], P = T> extends IComparableQueryBase<T, R, P> {
     /**
      * Finds results where the specified property starts with the provided string (using LIKE "string%").
      */
@@ -61,6 +62,14 @@ export interface IComparableQuery<T extends { id: number }, R extends T | T[], P
      */
     isFalse(): IQuery<T, R, P>;
     /**
+     * Finds results where the specified property is not null.
+     */
+    isNotNull(): IQuery<T, R, P>;
+    /**
+     * Finds results where the specified property is null.
+     */
+    isNull(): IQuery<T, R, P>;
+    /**
      * Determines whether the previously selected property is true.
      * @param value The value to check for truth.
      */
@@ -101,18 +110,4 @@ export interface IComparableQuery<T extends { id: number }, R extends T | T[], P
      * @param selectFromInnerQuery The property to select from the inner query.
      */
     notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQueryBase<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P>;
-    /**
-     * Finds results where the specified property is not null.
-     */
-    notNull(): IQuery<T, R, P>;
-    /**
-     * Finds results where the specified property is null.
-     */
-    null(): IQuery<T, R, P>;
-    /**
-     * Joins a subsequent navigation property on the previously joined relationship of type P for where conditions on that property.
-     * @type {S} The type of the joined navigation property.
-     * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
-     */
-    thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IJoinedComparableQuery<T, R, S>;
 }
