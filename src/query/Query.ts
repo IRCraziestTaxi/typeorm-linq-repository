@@ -1,5 +1,7 @@
-import { SqlConstants } from "../constants/SqlConstants";
 import { QueryWhereType } from "../enums/QueryWhereType";
+import { QueryMode } from "../enums/QueryMode";
+import { QueryJoinType } from "../enums/QueryJoinType";
+import { SqlConstants } from "../constants/SqlConstants";
 import { IComparableQuery } from "./interfaces/IComparableQuery";
 import { IJoinedComparableQuery } from "./interfaces/IJoinedComparableQuery";
 import { IJoinedQuery } from "./interfaces/IJoinedQuery";
@@ -13,12 +15,16 @@ import { nameof } from "ts-simple-nameof";
 import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
 export class Query<T extends { id: number }, R extends T | T[], P = T> implements IQuery<T, R, P>, IJoinedQuery<T, R, P>, IComparableQuery<T, R, P>, IJoinedComparableQuery<T, R, P>, IQueryInternal<T, R, P>, ISelectQueryInternal<T, R, P> {
-    private _getAction: () => Promise<R>;
-    private _includeAliasHistory: string[];
-    private _initialAlias: string;
+    private readonly _getAction: () => Promise<R>;
+    private readonly _includeAliasHistory: string[];
+    private readonly _initialAlias: string;
+    private readonly _query: SelectQueryBuilder<T>;
+    private readonly _queryParts: IQueryBuilderPart<T>[];
+
     private _lastAlias: string;
-    private _query: SelectQueryBuilder<T>;
-    private _queryParts: IQueryBuilderPart<T>[];
+    // private _queryJoinMode: QueryJoinMode;
+    private _queryJoinType: QueryJoinType;
+    private _queryMode: QueryMode;
     private _queryWhereType: QueryWhereType;
     private _selectedProperty: string;
 
@@ -33,6 +39,9 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         this._initialAlias = queryBuilder.alias;
         this._lastAlias = this._initialAlias;
         this._query = queryBuilder;
+        // this._queryJoinMode = QueryJoinMode.None;
+        this._queryJoinType = QueryJoinType.InnerJoin;
+        this._queryMode = QueryMode.Get;
         this._queryParts = [];
         this._queryWhereType = QueryWhereType.Normal;
         this._selectedProperty = "";
@@ -90,7 +99,10 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
 
         // Can we go ahead and set QueryWhereType.InnerJoin so that .where() will not reset alias?
         // Assume it's ok since .join(), .thenJoin(), etc. will set it anyway.
-        this._queryWhereType = QueryWhereType.InnerJoin;
+        // this._queryWhereType = QueryWhereType.InnerJoin;
+
+        this._queryJoinType = QueryJoinType.InnerJoin;
+        // this._queryJoinMode = QueryJoinMode.InnerJoin;
 
         return this.joinForeignEntity(foreignEntity);
     }
@@ -119,13 +131,13 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         return this.includePropertyUsingAlias<S>(propertySelector, this._initialAlias);
     }
 
-    public includeWhere<S extends Object>(propertySelector: (obj: T) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
-        const includeProperty: string = nameof<T>(propertySelector);
-        const includeConditionProperty: string = nameof<S>(subPropertySelector);
-        this._queryWhereType = QueryWhereType.Include;
-        this.createJoinCondition(includeProperty, includeConditionProperty, this._initialAlias);
-        return <IComparableQuery<T, R, S>><any>this;
-    }
+    // public includeWhere<S extends Object>(propertySelector: (obj: T) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
+    //     const includeProperty: string = nameof<T>(propertySelector);
+    //     const includeConditionProperty: string = nameof<S>(subPropertySelector);
+    //     this._queryWhereType = QueryWhereType.Include;
+    //     this.createJoinCondition(includeProperty, includeConditionProperty, this._initialAlias);
+    //     return <IComparableQuery<T, R, S>><any>this;
+    // }
 
     public inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQuery<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P> {
         return this.includeOrExcludeFromInnerQuery(<IQueryInternal<TI, RI, PI1>>innerQuery, <ISelectQueryInternal<TI, RI, PI2>>selectFromInnerQuery, SqlConstants.OPERATOR_IN);
@@ -162,13 +174,13 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         return this.joinPropertyUsingAlias(propertySelector, this._initialAlias);
     }
 
-    public joinWhere<S extends Object>(propertySelector: (obj: T) => S | S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
-        const includeProperty: string = nameof<T>(propertySelector);
-        const includeConditionProperty: string = nameof<S>(subPropertySelector);
-        this._queryWhereType = QueryWhereType.InnerJoin;
-        this.createJoinCondition(includeProperty, includeConditionProperty, this._initialAlias);
-        return <IComparableQuery<T, R, S>><any>this;
-    }
+    // public joinWhere<S extends Object>(propertySelector: (obj: T) => S | S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
+    //     const includeProperty: string = nameof<T>(propertySelector);
+    //     const includeConditionProperty: string = nameof<S>(subPropertySelector);
+    //     this._queryWhereType = QueryWhereType.InnerJoin;
+    //     this.createJoinCondition(includeProperty, includeConditionProperty, this._initialAlias);
+    //     return <IComparableQuery<T, R, S>><any>this;
+    // }
 
     public lessThan(value: number): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_LESS, value);
@@ -281,13 +293,13 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         return this.includePropertyUsingAlias<S>(propertySelector, this._lastAlias);
     }
 
-    public thenIncludeWhere<S extends Object>(propertySelector: (obj: P) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
-        const includeProperty: string = nameof<P>(propertySelector);
-        const includeConditionProperty: string = nameof<S>(subPropertySelector);
-        this._queryWhereType = QueryWhereType.Include;
-        this.createJoinCondition(includeProperty, includeConditionProperty, this._lastAlias);
-        return <IComparableQuery<T, R, S>><any>this;
-    }
+    // public thenIncludeWhere<S extends Object>(propertySelector: (obj: P) => S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
+    //     const includeProperty: string = nameof<P>(propertySelector);
+    //     const includeConditionProperty: string = nameof<S>(subPropertySelector);
+    //     this._queryWhereType = QueryWhereType.Include;
+    //     this.createJoinCondition(includeProperty, includeConditionProperty, this._lastAlias);
+    //     return <IComparableQuery<T, R, S>><any>this;
+    // }
 
     public thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S> | IComparableQuery<T, R, P> | any {
         // Do NOT set QueryWhereType to InnerJoin here in case the flow is something like
@@ -308,13 +320,13 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         return this.joinPropertyUsingAlias(propertySelector, this._lastAlias);
     }
 
-    public thenJoinWhere<S extends Object>(propertySelector: (obj: P) => S | S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
-        const includeProperty: string = nameof<P>(propertySelector);
-        const includeConditionProperty: string = nameof<S>(subPropertySelector);
-        this._queryWhereType = QueryWhereType.InnerJoin;
-        this.createJoinCondition(includeProperty, includeConditionProperty, this._lastAlias);
-        return <IComparableQuery<T, R, S>><any>this;
-    }
+    // public thenJoinWhere<S extends Object>(propertySelector: (obj: P) => S | S[], subPropertySelector: (obj: S) => any): IComparableQuery<T, R, S> {
+    //     const includeProperty: string = nameof<P>(propertySelector);
+    //     const includeConditionProperty: string = nameof<S>(subPropertySelector);
+    //     this._queryWhereType = QueryWhereType.InnerJoin;
+    //     this.createJoinCondition(includeProperty, includeConditionProperty, this._lastAlias);
+    //     return <IComparableQuery<T, R, S>><any>this;
+    // }
 
     public toPromise(): Promise<R> {
         return this._getAction.call(this.buildQuery(this));
@@ -329,27 +341,43 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         // Per notes:
         // If QueryWhereType is InnerJoin, we want to use the last joined type and alias.
         // Otherwise, this method should use the base type and initial alias.
-        if (this._queryWhereType !== QueryWhereType.InnerJoin) {
-            this._lastAlias = this._initialAlias;
-        }
+        // if (this._queryWhereType !== QueryWhereType.InnerJoin) {
+        //     this._lastAlias = this._initialAlias;
+        // }
 
         const whereProperty: string = nameof<F>(propertySelector);
+
+        // In the event of performing a normal where after a join-based where, use the initial alias.
+        // if (this._queryMode === QueryMode.Get) {
+        if (this._queryJoinMode !== QueryJoinMode.None) {
+            this._lastAlias = this._initialAlias;
+            const where: string = `${this._lastAlias}.${whereProperty}`;
+            this._queryParts.push(new QueryBuilderPart(
+                this._query.where, [where]
+            ));
+        }
+        else {
+            this.createJoinCondition(whereProperty);
+        }
+
+        // this._queryMode = QueryMode.Compare;
+
         // if (subPropertySelector) {
         //     const whereConditionProperty: string = nameof<S>(subPropertySelector);
         //     this._queryWhereType = QueryWhereType.InnerJoin;
         //     this.createJoinCondition(whereProperty, whereConditionProperty);
         // }
         // else {
-        const where: string = `${this._lastAlias}.${whereProperty}`;
-        this._queryParts.push(new QueryBuilderPart(
-            this._query.where, [where]
-        ));
-        this._queryWhereType = QueryWhereType.Normal;
+        // const where: string = `${this._lastAlias}.${whereProperty}`;
+        // this._queryParts.push(new QueryBuilderPart(
+        //     this._query.where, [where]
+        // ));
+        // this._queryWhereType = QueryWhereType.Normal;
         // }
         return <IComparableQuery<T, R, T>><any>this;
     }
 
-    private addJoinCondition(whereProperty: string, condition: "AND" | "OR"): void {
+    private addJoinCondition(whereProperty: string, condition: "AND" | "OR", targetQueryPart: IQueryBuilderPart<T> = null): void {
         // Result of calling includeWhere(x => x.prop).<compare>(...).<and/or>(...)
         // [QueryBuilder.leftJoinAndSelect, ["alias.includedProperty", "includedProperty", "includedProperty.property = 'something'"]]
         // OR
@@ -358,34 +386,40 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         // OR
         // Result of calling where(...).<compare>(...).from(...).<and/or>(...)
         // [QueryBuilder.where, ["alias.includedProperty <IN/NOT IN> (...)"]]
-        const part: IQueryBuilderPart<T> = this._queryParts.pop();
+        // const part: IQueryBuilderPart<T> = this._queryParts.pop();
+        let part: IQueryBuilderPart<T> = targetQueryPart || this._queryParts.pop();
 
         // "includedProperty.property = 'something'"
         let joinCondition: string = (<[string]>part.queryParams).pop();
 
-        // If dealing with a join or include, the joined property's alias will be at the end of the query params array.
-        if (part.queryParams.length) {
-            // TODO: Use last alias instead? Causing additional join conditions
-            // following joins, thenJoins, etc. to fail due to bad alias.
+        // // If dealing with a join or include, the joined property's alias will be at the end of the query params array.
+        // if (part.queryParams.length) {
+        //     // TODO: Use last alias instead? Causing additional join conditions
+        //     // following joins, thenJoins, etc. to fail due to bad alias.
 
-            // 2017/12/26 21:45 - replacing joinAlias with lastAlias.
-            // "includedProperty"
-            // const joinAlias: string = (<[string]>part.queryParams).pop();
-            // TODO: remove variable.
-            const joinAlias: string = this._lastAlias;
+        //     // 2017/12/26 21:45 - replacing joinAlias with lastAlias.
+        //     // "includedProperty"
+        //     // const joinAlias: string = (<[string]>part.queryParams).pop();
+        //     // TODO: remove variable.
+        //     // const joinAlias: string = this._lastAlias;
 
-            // "otherProperty"
-            // "includedProperty.property = 'something' <AND/OR> includedProperty.otherProperty" (to be finished in completeWhere())
-            joinCondition += ` ${condition} "${joinAlias}"."${whereProperty}"`;
-            // (<[string]>part.queryParams).push(joinAlias);
-        }
-        // Otherwise, "and" or "or" was called after calling "where" followed by "from", so the condition was the only element in the query params array.
-        else {
-            joinCondition += ` ${condition} "${this._lastAlias}"."${whereProperty}"`;
-        }
+        //     // "otherProperty"
+        //     // "includedProperty.property = 'something' <AND/OR> includedProperty.otherProperty" (to be finished in completeWhere())
+        //     // joinCondition += ` ${condition} "${joinAlias}"."${whereProperty}"`;
+        //     joinCondition += ` ${condition} "${this._lastAlias}"."${whereProperty}"`;
+        //     // (<[string]>part.queryParams).push(joinAlias);
+        // }
+        // // Otherwise, "and" or "or" was called after calling "where" followed by "from", so the condition was the only element in the query params array.
+        // else {
+        joinCondition += ` ${condition} "${this._lastAlias}"."${whereProperty}"`;
+        // }
 
         (<[string]>part.queryParams).push(joinCondition);
-        this._queryParts.push(part);
+
+        // If we did not receive the optional taretQueryPart argument, that means we used the last query part, which was popped from this._queryParts.
+        if (!targetQueryPart) {
+            this._queryParts.push(part);
+        }
     }
 
     private andOr<S extends Object>(
@@ -398,7 +432,8 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         // A third parameter on the query parameters indicates additional join conditions.
         // Only add a join condition if performing a conditional join.
         if (
-            this._queryWhereType !== QueryWhereType.Normal &&
+            // this._queryWhereType !== QueryWhereType.Normal &&
+            this._queryMode === QueryMode.Join &&
             this._queryParts[this._queryParts.length - 1].queryParams.length === 3
         ) {
             this.addJoinCondition(whereProperty, operation);
@@ -429,7 +464,7 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
     }
 
     private completeJoinedWhere(operator: string, selector: (obj: P) => any): IQuery<T, R, P> {
-        this._queryWhereType = QueryWhereType.InnerJoin;
+        // this._queryWhereType = QueryWhereType.InnerJoin;
         const selectedProperty: string = nameof<P>(selector);
         const compareValue: string = `${this._lastAlias}.${selectedProperty}`;
         // compareValue is a string but should be treated as a join property
@@ -469,7 +504,9 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         }
         this._queryParts.push(...nonWheres);
 
-        if (this._queryWhereType !== QueryWhereType.Normal) {
+        // if (this._queryWhereType !== QueryWhereType.Normal) {
+        // If processing a join condition.
+        if (this._queryMode === QueryMode.Join) {
             // Don't use ObjectLiteral? (See below.)
             // if (typeof value === "string" && quoteString) {
             //     value = value.replace(/'/g, "''");
@@ -493,6 +530,7 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
             (<[string]>part.queryParams).push(joinCondition);
             this._queryParts.push(part);
         }
+        // If processing a normal comparison.
         else {
             // [QueryBuilder.<where | andWhere | orWhere>, ["alias.property"]]
             const part: IQueryBuilderPart<T> = wherePart;
@@ -509,30 +547,68 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         return this;
     }
 
-    private createJoinCondition(joinProperty: string, joinConditionProperty: string, alias: string): void {
-        // TODO: Pretty sure this method needs to call joinOrIncludeUsingAlias.
-        // Or, more likely, includeWhere, joinWhere, etc. need to call it.
+    // private createJoinCondition(joinProperty: string, joinConditionProperty: string, alias: string): void {
+    private createJoinCondition(joinConditionProperty: string): void {
+        // Find the query part on which to add the condition. Usually will be the last, but not always.
+        let targetQueryPart: IQueryBuilderPart<T> = null;
+        const otherParts: IQueryBuilderPart<T>[] = [];
 
-        // alias.property
-        const joinPropertyFull: string = `${alias}.${joinProperty}`;
-        // alias_property
-        const joinAlias: string = `${this._lastAlias}_${joinProperty}`;
-        // TODO: Do we need to be setting last alias here?
-        this._lastAlias = joinAlias;
-        // alias_property.conditionProperty
-        const joinCondition: string = `${joinAlias}.${joinConditionProperty}`;
-
-        let joinFunction: (property: string, aliasName: string, condition?: string) => SelectQueryBuilder<T> = null;
-        if (this._queryWhereType === QueryWhereType.Include) {
-            joinFunction = this._query.leftJoinAndSelect;
-        }
-        else {
-            joinFunction = this._query.innerJoin;
+        while (!targetQueryPart && this._queryParts.length) {
+            const part: IQueryBuilderPart<T> = this._queryParts.pop();
+            // See if this query part is the one in which the last alias was joined.
+            if (part.queryParams && part.queryParams.length > 1 && part.queryParams[1] === this._lastAlias) {
+                targetQueryPart = part;
+            }
+            else {
+                otherParts.unshift(part);
+            }
         }
 
-        this._queryParts.push(new QueryBuilderPart(
-            joinFunction, [joinPropertyFull, joinAlias, joinCondition]
-        ));
+        this._queryParts.push(...otherParts);
+
+        if (targetQueryPart) {
+            // There should not already be a join condition on this query builder part.
+            // If there is, we want to add a join condition, not overwrite it.
+            if (targetQueryPart.queryParams.length === 3) {
+                this.addJoinCondition(joinConditionProperty, "AND", targetQueryPart);
+            }
+            else {
+                const joinCondition: string = `${this._lastAlias}.${joinConditionProperty}`;
+                (<[string]>targetQueryPart.queryParams).push(joinCondition);
+            }
+
+            this._queryParts.push(targetQueryPart);
+        }
+
+        // // TODO: Pretty sure this method needs to call joinOrIncludeUsingAlias.
+        // // Or, more likely, includeWhere, joinWhere, etc. need to call it.
+
+        // // alias.property
+        // const joinPropertyFull: string = `${alias}.${joinProperty}`;
+        // // alias_property
+        // const joinAlias: string = `${this._lastAlias}_${joinProperty}`;
+        // // TODO: Do we need to be setting last alias here?
+        // this._lastAlias = joinAlias;
+        // // alias_property.conditionProperty
+        // const joinCondition: string = `${joinAlias}.${joinConditionProperty}`;
+
+        // let joinFunction: (property: string, aliasName: string, condition?: string) => SelectQueryBuilder<T> = null;
+        // // if (this._queryWhereType === QueryWhereType.Include) {
+        // //     joinFunction = this._query.leftJoinAndSelect;
+        // // }
+        // // else {
+        // //     joinFunction = this._query.innerJoin;
+        // // }
+        // if (this._queryJoinType === QueryJoinType.InnerJoin) {
+        //     joinFunction = this._query.innerJoin;
+        // }
+        // else {
+        //     joinFunction = this._query.leftJoinAndSelect;
+        // }
+
+        // this._queryParts.push(new QueryBuilderPart(
+        //     joinFunction, [joinPropertyFull, joinAlias, joinCondition]
+        // ));
     }
 
     private includeOrExcludeFromInnerQuery<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQueryInternal<TI, RI, PI1>, selectFromInnerQuery: ISelectQueryInternal<TI, RI, PI2>, operator: string): IQuery<T, R, P> {
@@ -549,6 +625,7 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
     }
 
     private includePropertyUsingAlias<S extends Object>(propertySelector: (obj: T | P) => S | S[], queryAlias: string): IQuery<T, R, S> {
+        this._queryJoinType = QueryJoinType.Include;
         return this.joinOrIncludePropertyUsingAlias(propertySelector, queryAlias, this._query.leftJoinAndSelect);
     }
 
@@ -570,6 +647,7 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
     private joinOrIncludePropertyUsingAlias<S extends Object>(propertySelector: (obj: T | P) => S | S[], queryAlias: string, queryAction: (...params: any[]) => SelectQueryBuilder<T>): IQuery<T, R, S> {
         const propertyName: string = nameof<P>(propertySelector);
         const resultAlias: string = `${queryAlias}_${propertyName}`;
+        this._queryMode = QueryMode.Join;
         this._lastAlias = resultAlias;
         // If just passing through a chain of possibly already executed includes for semantics, don't execute the include again.
         // Only execute the include if it has not been previously executed.
@@ -588,6 +666,7 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
     }
 
     private joinPropertyUsingAlias<S extends Object>(propertySelector: (obj: T | P) => S | S[], queryAlias: string): IQuery<T, R, S> {
+        this._queryJoinType = QueryJoinType.InnerJoin;
         return this.joinOrIncludePropertyUsingAlias(propertySelector, queryAlias, this._query.innerJoin);
     }
 }
