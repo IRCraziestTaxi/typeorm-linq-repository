@@ -289,7 +289,6 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         // OR
         // Result of calling where(...).<compare>(...).from(...).<and/or>(...)
         // [QueryBuilder.where, ["alias.includedProperty <IN/NOT IN> (...)"]]
-        // const part: IQueryBuilderPart<T> = this._queryParts.pop();
         let part: IQueryBuilderPart<T> = targetQueryPart || this._queryParts.pop();
 
         // "includedProperty.property = 'something'"
