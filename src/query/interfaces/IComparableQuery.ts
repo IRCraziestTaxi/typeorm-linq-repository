@@ -1,7 +1,6 @@
 import { IComparableQueryBase } from "./IComparableQueryBase";
 import { IJoinedComparableQuery } from "./IJoinedComparableQuery";
 import { IQuery } from "./IQuery";
-import { IQueryBase } from "./IQueryBase";
 import { ISelectQuery } from "./ISelectQuery";
 
 /**
@@ -51,11 +50,9 @@ export interface IComparableQuery<T extends { id: number }, R extends T | T[], P
      * @type {TI} The base type of the inner Query.
      * @type {RI} The return type of the inner Query.
      * @type {PI1} The type of the last joined navigation property from the inner Query.
-     * @type {PI2} The type of the joined navigation property from which a property was selected in the inner Query.
      * @param innerQuery The inner query from which to select the specified value.
-     * @param selectFromInnerQuery The property to select from the inner query.
      */
-    inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQueryBase<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P>;
+    inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected property is false.
      * @param value The value to check for falsity.
@@ -105,9 +102,7 @@ export interface IComparableQuery<T extends { id: number }, R extends T | T[], P
      * @type {TI} The base type of the inner Query.
      * @type {RI} The return type of the inner Query.
      * @type {PI1} The type of the last joined navigation property from the inner Query.
-     * @type {PI2} The type of the joined navigation property from which a property was selected in the inner Query.
      * @param innerQuery The inner query from which to select the specified property.
-     * @param selectFromInnerQuery The property to select from the inner query.
      */
-    notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQueryBase<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P>;
+    notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P>;
 }

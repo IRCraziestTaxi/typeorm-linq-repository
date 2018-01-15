@@ -55,7 +55,7 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
     }
 
     public get selected(): string {
-        return `${this._lastAlias}.${this._selectedProperty}`;
+        return this._selectedProperty;
     }
 
     public and<S extends Object>(propertySelector: (obj: P) => S): IComparableQuery<T, R, P> {
@@ -115,12 +115,12 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         return this.includePropertyUsingAlias<S>(propertySelector, this._initialAlias);
     }
 
-    public inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQuery<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P> {
-        return this.includeOrExcludeFromInnerQuery(<IQueryInternal<TI, RI, PI1>>innerQuery, <ISelectQueryInternal<TI, RI, PI2>>selectFromInnerQuery, SqlConstants.OPERATOR_IN);
+    public inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P> {
+        return this.includeOrExcludeFromInnerQuery(<ISelectQueryInternal<TI, RI, PI1>>innerQuery, SqlConstants.OPERATOR_IN);
     }
 
     public isFalse(): IQuery<T, R, P> {
-        this.completeWhere("=", false);
+        this.equal(false);
         return this;
     }
 
@@ -133,7 +133,7 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
     }
 
     public isTrue(): IQuery<T, R, P> {
-        this.completeWhere("=", true);
+        this.equal(true);
         return this;
     }
 
@@ -169,8 +169,8 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         return this.completeWhere(SqlConstants.OPERATOR_NOT_IN, `(${exclude.join(", ")})`);
     }
 
-    public notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQuery<TI, RI, PI1>, selectFromInnerQuery: ISelectQuery<TI, RI, PI2>): IQuery<T, R, P> {
-        return this.includeOrExcludeFromInnerQuery(<IQueryInternal<TI, RI, PI1>>innerQuery, <ISelectQueryInternal<TI, RI, PI2>>selectFromInnerQuery, SqlConstants.OPERATOR_NOT_IN);
+    public notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P> {
+        return this.includeOrExcludeFromInnerQuery(<ISelectQueryInternal<TI, RI, PI1>>innerQuery, SqlConstants.OPERATOR_NOT_IN);
     }
 
     public or<S extends Object>(propertySelector: (obj: P) => S): IComparableQuery<T, R, P> {
@@ -195,8 +195,20 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         return this;
     }
 
-    public select(propertySelector: (obj: P) => any): ISelectQuery<T, R, P> {
-        this._selectedProperty = nameof<P>(propertySelector);
+    public select(propertySelector: (obj: any) => any): ISelectQuery<T, R, T> | ISelectQuery<T, R, P> {
+        const selectedProperty: string = nameof(propertySelector);
+        let alias: string = null;
+
+        // If coming out of a comparison, query is back in "base mode" (where and select use base type).
+        if (this._queryMode === QueryMode.Get) {
+            alias = this._initialAlias;
+        }
+        // If in a join, use the last joined entity to select a property.
+        else {
+            alias = this._lastAlias;
+        }
+
+        this._selectedProperty = `${alias}.${selectedProperty}`;
         return this;
     }
 
@@ -290,7 +302,7 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
 
         // "includedProperty.property = 'something'"
         let joinCondition: string = (<[string]>part.queryParams).pop();
-        joinCondition += ` ${condition} "${this._lastAlias}"."${whereProperty}"`;
+        joinCondition += ` ${condition} ${this._lastAlias}.${whereProperty}`;
         (<[string]>part.queryParams).push(joinCondition);
 
         // If we did not receive the optional taretQueryPart argument, that means we used the last query part, which was popped from this._queryParts.
@@ -455,10 +467,11 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         this._queryParts.push(targetQueryPart);
     }
 
-    private includeOrExcludeFromInnerQuery<TI extends { id: number }, RI extends TI | TI[], PI1 = TI, PI2 = TI>(innerQuery: IQueryInternal<TI, RI, PI1>, selectFromInnerQuery: ISelectQueryInternal<TI, RI, PI2>, operator: string): IQuery<T, R, P> {
+    private includeOrExcludeFromInnerQuery<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQueryInternal<TI, RI, PI1>, operator: string): IQuery<T, R, P> {
         innerQuery.queryParts.unshift(new QueryBuilderPart(
-            innerQuery.query.select, [selectFromInnerQuery.selected]
+            innerQuery.query.select, [innerQuery.selected]
         ));
+
         // Use <any> since all that matters is that the base type of any query contains a property named "id".
         const query: string = this.buildQuery(<any>innerQuery).getQuery();
         this.completeWhere(operator, `(${query})`, false);

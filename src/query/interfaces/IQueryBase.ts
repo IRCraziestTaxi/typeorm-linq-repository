@@ -68,11 +68,6 @@ export interface IQueryBase<T extends { id: number }, R extends T | T[], P = T> 
      */
     orderByDescending(propertySelector: (obj: P) => any): IQuery<T, R, P>;
     /**
-     * Selects a property from the last joined entity to select while performing an inner query.
-     * @param propertySelector Property selection lambda for the property to select.
-     */
-    select(propertySelector: (obj: P) => any): ISelectQuery<T, R, P>;
-    /**
      * Sets the number of results to skip before taking results from the query.
      * @param skip The number of results to skip.
      */
