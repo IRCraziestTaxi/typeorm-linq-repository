@@ -3,18 +3,18 @@ import { IQueryBase } from "./IQueryBase";
 import { ISelectQuery } from "./ISelectQuery";
 
 /**
- * Basic query operations for Queries that are not in Comparable mode.
+ * Allows .where() to use the last joined entity's alias.
  */
-export interface IQuery<T extends { id: number }, R extends T | T[], P = T> extends IQueryBase<T, R, P> {
+export interface IJoinedQuery<T extends { id: number }, R extends T | T[], P = T> extends IQueryBase<T, R, P> {
     /**
      * Selects a property from the last joined entity to select while performing an inner query.
      * @param propertySelector Property selection lambda for the property to select.
      */
-    select(propertySelector: (obj: T) => any): ISelectQuery<T, R, T>;
+    select(propertySelector: (obj: P) => any): ISelectQuery<T, R, P>;
     /**
-     * Filters the query with a conditional statement based on the query's base type.
+     * Filters the query with a conditional statement based on the last joined entity's type.
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to compare.
      */
-    where<S extends Object>(propertySelector: (obj: T) => S): IComparableQuery<T, R, T>;
+    where<S extends Object>(propertySelector: (obj: P) => S): IComparableQuery<T, R, P>;
 }

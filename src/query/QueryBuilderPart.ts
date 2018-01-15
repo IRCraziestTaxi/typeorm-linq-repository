@@ -1,12 +1,20 @@
 import { IQueryBuilderPart } from './interfaces/IQueryBuilderPart';
-import { QueryBuilder, ObjectLiteral } from "typeorm";
+import { /*ObjectLiteral, */SelectQueryBuilder } from "typeorm";
 
 export class QueryBuilderPart<T extends { id: number }> implements IQueryBuilderPart<T> {
-    public queryAction: (...params: any[]) => QueryBuilder<T>;
-    public queryParams: [string] | [string, ObjectLiteral] | [number];
+    private _queryAction: (...params: any[]) => SelectQueryBuilder<T>;
+    private _queryParams: [string] /*| [string, ObjectLiteral]*/ | [Function, string, "true"] | [number];
 
-    constructor(queryAction: (...params: any[]) => QueryBuilder<T>, queryParams: [string] | [string, ObjectLiteral] | [number]) {
-        this.queryAction = queryAction;
-        this.queryParams = queryParams;
+    public constructor(queryAction: (...params: any[]) => SelectQueryBuilder<T>, queryParams: [string] /*| [string, ObjectLiteral]*/ | [Function, string, "true"] | [number]) {
+        this._queryAction = queryAction;
+        this._queryParams = queryParams;
+    }
+
+    public get queryAction(): (...params: any[]) => SelectQueryBuilder<T> {
+        return this._queryAction;
+    }
+
+    public get queryParams(): [string] /*| [string, ObjectLiteral]*/ | [Function, string, "true"] | [number] {
+        return this._queryParams;
     }
 }

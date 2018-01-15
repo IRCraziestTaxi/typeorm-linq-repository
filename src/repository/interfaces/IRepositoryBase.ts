@@ -1,4 +1,4 @@
-import { ObjectLiteral, QueryBuilder } from "typeorm";
+import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../../query/interfaces/IQuery";
 
 /**
@@ -6,24 +6,23 @@ import { IQuery } from "../../query/interfaces/IQuery";
  */
 export interface IRepositoryBase<T extends { id: number }> {
     /**
-     * Inserts new entities into the database by ensuring that their IDs are null prior to persistance.
-     * @param entities The entities to create.
+     * Creates one or more entities in the database.
+     * @param entities The entity or entities to create.
      */
-    createMany(entities: T[]): Promise<T[]>;
-    /**
-     * Inserts a new entity into the database by ensuring that the ID is null prior to persistance.
-     * @param entity The entity to create.
-     */
-    createOne(entity: T): Promise<T>;
+    create<E = T | T[]>(entities: E): Promise<E>;
     /**
      * Gets an instance of a QueryBuilder (useful if the Query returned by this repository does not meet your needs yet).
      */
-    createQueryBuilder(alias: string): QueryBuilder<T>;
+    createQueryBuilder(alias: string): SelectQueryBuilder<T>;
+    /**
+     * Deletes one or more entities from the database.
+     * @param entities The entity or entities to delete.
+     */
+    delete<E = T | T[]>(entities: E): Promise<boolean>;
     /**
      * Returns a Query returning a set of results.
-     * @param alias Optional alias for subsequent query conditions.
      */
-    getAll(alias?: string): IQuery<T, T[]>;
+    getAll(): IQuery<T, T[]>;
     /**
      * Finds one entity with the specified ID.
      * @param id The ID of the entity to find.
@@ -31,27 +30,11 @@ export interface IRepositoryBase<T extends { id: number }> {
     getById(id: number): IQuery<T, T>;
     /**
      * Returns a Query returning one entity.
-     * @param alias Optional alias for subsequent query conditions.
      */
-    getOne(alias?: string): IQuery<T, T>;
+    getOne(): IQuery<T, T>;
     /**
-     * Persists a set of entities to the database.
-     * @param entities The set of entities to persist.
+     * Updates one or more entities in the database.
+     * @param entities The entity or entities to update.
      */
-    persistMany(entities: T[]): Promise<T[]>;
-    /**
-     * Persists one entity to the database.
-     * @param entity The entity to persist.
-     */
-    persistOne(entity: T): Promise<T>;
-    /**
-     * Removes a set of entities from the database.
-     * @param entities The set of entities to remove.
-     */
-    removeMany(entities: T[]): Promise<T[]>;
-    /**
-     * Removes one entity from the database.
-     * @param entity The entity to remove.
-     */
-    removeOne(entity: T): Promise<T>;
+    update<E = T | T[]>(entities: E): Promise<E>;
 }

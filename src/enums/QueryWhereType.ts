@@ -1,5 +1,10 @@
 export enum QueryWhereType {
+    /**
+     * A normal comparison (not on a joined entity).
+     */
     Normal = 0,
-    Include = 1,
-    InnerJoin = 2
+    /**
+     * A comparison involving a joined entity.
+     */
+    Joined = 1
 }
