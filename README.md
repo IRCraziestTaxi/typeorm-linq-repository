@@ -218,6 +218,8 @@ Join from an unrelated entity using `from()`. A simple example of this is not ea
 this._songRepository.getAll().join(s => s.artist).where(a => a.id).equal(artistId).from<IUserProfileAttribute>(UserProfileAttribute).thenJoin(p => p.genre)/* ... */
 ```
 
+Note that the type argument `IUserProfileAttribute` is not required, but is used in order to project the interface rather than the concrete type of `UserProfileAttribute` as the query's current property type.
+
 ### Comparing Values With Joined Entities
 Perform comparisons with values on joined entities by calling `from()`, `join()`, and `thenJoin()` after calling `where()`, `and()`, or `or()`.
 
@@ -240,7 +242,7 @@ The following query conditions are available for comparisons on related entities
 `notEqualJoined(selector: (obj: P) => any)`: Determines whether the property specified in the last "where" is not equal to the specified property on the last joined entity.
 
 ### Including or Excluding Results Within an Inner Query
-To utilize an inner query, use the `inSelected()` and `notInSelected()` methods. Each takes an inner `IQuery` as its first argument an an `ISelectQuery` as its second, which sipmly specifies which value to select from the inner query to project to the `IN` or `NOT IN` list.
+To utilize an inner query, use the `inSelected()` and `notInSelected()` methods. Each takes an inner `IQuery` as its first argument an an `ISelectQuery` as its second, which simply specifies which value to select from the inner query to project to the `IN` or `NOT IN` list.
 
 The following example is overkill since, in reality, you would simply add the condition that the post is not archived on the main query, but consider what is going on within the queries in order to visualize how inner queries in `typeorm-linq-repository` work.
 
@@ -426,6 +428,8 @@ this._songRepository
             .select(s => s.id)
     );
 ```
+
+Note that the type argument `IUserProfileAttribute` is not required, but is used in order to project the interface rather than the concrete type of `UserProfileAttribute` as the query's current property type.
 
 ### Ordering Queries
 You can order queries in either direction and using as many subsequent order statements as needed.
