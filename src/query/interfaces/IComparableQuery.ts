@@ -30,7 +30,7 @@ export interface IComparableQuery<T extends { id: number }, R extends T | T[], P
      * @type {F} The type of the foreign entity to join.
      * @param foreignEntity The TypeORM entity whose table to join.
      */
-    from<F extends { id: number }>(foreignEntity: { new (...params: any[]): F; }): IJoinedComparableQuery<T, R, F>;
+    from<F extends { id: number }>(foreignEntity: { new(...params: any[]): F; }): IJoinedComparableQuery<T, R, F>;
     /**
      * Determines whether the previously selected property is greater than the specified value.
      * @param value The value against which to compare.
@@ -99,7 +99,7 @@ export interface IComparableQuery<T extends { id: number }, R extends T | T[], P
      * Determines whether the previously selected value is not contained in the specified array of values.
      * @param include The array of values to check for exclusion of the previously selected value.
      */
-    notIn(exclude: string [] | number[]): IQuery<T, R, P>;
+    notIn(exclude: string[] | number[]): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected value is not contained in the result of values selected from an inner query.
      * @type {TI} The base type of the inner Query.

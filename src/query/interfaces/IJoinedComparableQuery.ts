@@ -11,7 +11,7 @@ export interface IJoinedComparableQuery<T extends { id: number }, R extends T | 
      */
     equalJoined(selector: (obj: P) => any): IQuery<T, R, P>;
     /**
-     * Determines whether the property specified in the last "where" is less than the specified property on the last joined entity.
+     * Determines whether the property specified in the last "where" is greater than the specified property on the last joined entity.
      * @param selector Property selection lambda for property to compare, ex. x => x.prop
      */
     greaterThanJoined(selector: (obj: P) => any): IQuery<T, R, P>;
