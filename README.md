@@ -11,6 +11,8 @@ This is a work in progress. This project is currently in alpha and should be tre
 
 `typeorm-linq-repository`'s queries handle simple includes, joins, and join conditions very well and now has the capability to take on more complex queries. The only way it will continue to mature is to have its limits tested see some issues and pull requests come in.
 
+`typeorm-linq-repository` has been tested with Postgres and MySQL, but since TypeORM manages the ubiquity of queries amongst different database engines, it should work just fine with all database engines. Please feel free to give it a try and provide as much testing as possible for it!
+
 ### Prerequisites
 [TypeORM](https://github.com/typeorm/typeorm "TypeORM"), a code-first relational database ORM for typescript, is the foundation of this project. If you are unfamiliar with TypeORM, I strongly suggest that you check it out.
 
