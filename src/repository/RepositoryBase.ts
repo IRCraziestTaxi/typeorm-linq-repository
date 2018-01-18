@@ -13,16 +13,14 @@ export abstract class RepositoryBase<T extends { id: number }> implements IRepos
         this._repository = getConnectionManager().get().getRepository<T>(entityType);
     }
 
-    public create<E = T | T[]>(entities: E): Promise<E> {
+    public create<E extends T | T[]>(entities: E): Promise<E> {
         if (entities instanceof Array) {
-            // TODO: Can this be done correctly? Don't care right now. Typescript is pissing me off.
-            for (let entity of (<T[]><any>entities)) {
+            for (let entity of (<T[]>entities)) {
                 entity.id = undefined;
             }
         }
         else {
-            // TODO: Can this be done correctly? Don't care right now. Typescript is pissing me off.
-            (<T><any>entities).id = undefined;
+            (<T>entities).id = undefined;
         }
 
         return this.update(entities);
@@ -32,11 +30,22 @@ export abstract class RepositoryBase<T extends { id: number }> implements IRepos
         return this._repository.createQueryBuilder(alias);
     }
 
-    public delete<E = T | T[]>(entities: E): Promise<boolean> {
-        return this._repository.delete(entities).then(() => {
+    public delete(entities: number | T | T[]): Promise<boolean> {
+        let deletePromise: Promise<void | T | T[]> = null;
+
+        if (typeof (entities) === "number") {
+            deletePromise = this._repository.deleteById(entities);
+        }
+        // Compiler nonsense.
+        else if (entities instanceof Array) {
+            deletePromise = this._repository.remove(entities);
+        }
+        else {
+            deletePromise = this._repository.remove(entities);
+        }
+
+        return deletePromise.then(() => {
             return Promise.resolve(true);
-        }).catch((error: any) => {
-            return Promise.reject(new Error(error));
         });
     }
 
@@ -66,7 +75,13 @@ export abstract class RepositoryBase<T extends { id: number }> implements IRepos
         return query;
     }
 
-    public update<E = T | T[]>(entities: E): Promise<E> {
-        return this._repository.save(entities);
+    public update<E extends T | T[]>(entities: E): Promise<E> {
+        // Compiler nonsense.
+        if (entities instanceof Array) {
+            return <Promise<E>>this._repository.save(entities);
+        }
+        else {
+            return <Promise<E>>this._repository.save(<T>entities);
+        }
     }
 }
