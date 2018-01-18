@@ -9,16 +9,16 @@ export interface IRepositoryBase<T extends { id: number }> {
      * Creates one or more entities in the database.
      * @param entities The entity or entities to create.
      */
-    create<E = T | T[]>(entities: E): Promise<E>;
+    create<E extends T | T[]>(entities: E): Promise<E>;
     /**
      * Gets an instance of a QueryBuilder (useful if the Query returned by this repository does not meet your needs yet).
      */
     createQueryBuilder(alias: string): SelectQueryBuilder<T>;
     /**
      * Deletes one or more entities from the database.
-     * @param entities The entity or entities to delete.
+     * @param entities The entity or entities to delete or the ID of the entity to delete.
      */
-    delete<E = T | T[]>(entities: E): Promise<boolean>;
+    delete(entities: number | T | T[]): Promise<boolean>;
     /**
      * Returns a Query returning a set of results.
      */
@@ -36,5 +36,5 @@ export interface IRepositoryBase<T extends { id: number }> {
      * Updates one or more entities in the database.
      * @param entities The entity or entities to update.
      */
-    update<E = T | T[]>(entities: E): Promise<E>;
+    update<E extends T | T[]>(entities: E): Promise<E>;
 }
