@@ -6,6 +6,8 @@ As of version 1.0.0-alpha.1, inner queries are now supported! That is, you may p
 
 Additionally, inner joins are made more intuitive and foreign entities may also be joined for more complex relational joining.
 
+Creating, updating, and deleting entities is also easier. The `createOne()`, `createMany()`, `persistOne()`, `persistMany()`, `removeOne()`, and `removeMany()` have been replaced by `create()`, `update()`, and `delete()`, respectively. Each takes either an entity or an array of entities and returns the appropriate result; `delete()` can also take the ID of an entity and perform a simple delete using that ID rather than the entity itself.
+
 ## Foreword
 This is a work in progress. This project is currently in alpha and should be treated as such. That being said, it is finally receiving a massive update after six months of inactivity, so I hope it will continue to see lots of use and continue to mature.
 
@@ -13,10 +15,13 @@ This is a work in progress. This project is currently in alpha and should be tre
 
 `typeorm-linq-repository` has been tested with Postgres and MySQL, but since TypeORM manages the ubiquity of queries amongst different database engines, it should work just fine with all database engines. Please feel free to give it a try and provide as much testing as possible for it!
 
-### Prerequisites
+## Prerequisites
 [TypeORM](https://github.com/typeorm/typeorm "TypeORM"), a code-first relational database ORM for typescript, is the foundation of this project. If you are unfamiliar with TypeORM, I strongly suggest that you check it out.
 
 TypeORM has changed a lot since this project's conception; as such, the legacy version of this library is now completely unsupported. This project will continue to stay up-to-date with TypeORM's changes.
+
+### Entity Compatibility
+In order for this repository to be compatible with your project, each entity must implement its ID as a numeric property called `id`. This repository uses generic types heavily and a common property representing an entity's primary key is essential.
 
 ## Installation
 To add `typeorm-linq-repository` and its dependencies to your project using NPM:
@@ -66,7 +71,7 @@ export { RepositoryBase };
 ```
 
 ## Using Queries
-typeorm-linq-repository not only makes setting up repositories incredibly easy; it also gives you powerful, LINQ-style query syntax.
+`typeorm-linq-repository` not only makes setting up repositories incredibly easy; it also gives you powerful, LINQ-style query syntax.
 
 ### Retrieving Entities
 You can query entities for all, many, or one result:
@@ -419,7 +424,7 @@ this._songRepository
             .where(g => g.id)
             .join(s => s.songGenre)
             .thenJoin(sg => sg.genre)
-            .equalJoined(g.id)
+            .equalJoined(g => g.id)
             .from<IUserProfileAttribute>(UserProfileAttribute)
             .thenJoin(p => p.user)
             .where(u => u.id)
@@ -471,3 +476,12 @@ If you encounter an issue or a query which this query wrapper cannot accommodate
 ```typescript
 this._userRepository.createQueryBuilder("user");
 ```
+
+## Persisting Entities
+The following methods persist and remove entities from the database:
+
+`create(entities: T | T[]): Promise<T | T[]>`: Creates one or more entities.
+
+`delete(entities: number | T | T[]): Promise<boolean>`: Deletes one or more entities by reference or one entity by ID.
+
+`update(entities: T | T[]): Promise<T | T[]>`: Updates one or more entities.
