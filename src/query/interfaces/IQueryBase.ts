@@ -1,3 +1,4 @@
+import { EntityBase } from "../../types/EntityBase";
 import { IComparableQuery } from "./IComparableQuery";
 import { IJoinedQuery } from "./IJoinedQuery";
 import { IQuery } from "./IQuery";
@@ -8,7 +9,7 @@ import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
 /**
  * Base set of operations for all Queries that are not in Comparable mode.
  */
-export interface IQueryBase<T extends { id: number }, R extends T | T[], P = T> {
+export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
     /**
      * Adds an additional logical AND condition for which to query results.
      * @type {S} The type of the joined navigation property.

@@ -2,6 +2,8 @@
 Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.
 
 ## What's New
+As of version 1.0.0-alpha.4, entities are no longer required to implement a numeric auto-generated ID as their keys. However, in order to use the `getById()` method, the entity must implement a property named `id` that is either a number or a string.
+
 As of version 1.0.0-alpha.1, inner queries are now supported! That is, you may perform the equivalent of `WHERE "entity"."id" <IN/NOT IN> (SELECT ...)` using `typeorm-linq-repository`.
 
 Additionally, inner joins are made more intuitive and foreign entities may also be joined for more complex relational joining.
@@ -19,9 +21,6 @@ This is a work in progress. This project is currently in alpha and should be tre
 [TypeORM](https://github.com/typeorm/typeorm "TypeORM"), a code-first relational database ORM for typescript, is the foundation of this project. If you are unfamiliar with TypeORM, I strongly suggest that you check it out.
 
 TypeORM has changed a lot since this project's conception; as such, the legacy version of this library is now completely unsupported. This project will continue to stay up-to-date with TypeORM's changes.
-
-### Entity Compatibility
-In order for this repository to be compatible with your project, each entity must implement its ID as a numeric property called `id`. This repository uses generic types heavily and a common property representing an entity's primary key is essential.
 
 ## Installation
 To add `typeorm-linq-repository` and its dependencies to your project using NPM:

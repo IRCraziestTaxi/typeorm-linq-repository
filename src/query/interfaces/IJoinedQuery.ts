@@ -1,3 +1,4 @@
+import { EntityBase } from "../../types/EntityBase";
 import { IComparableQuery } from "./IComparableQuery";
 import { IQueryBase } from "./IQueryBase";
 import { ISelectQuery } from "./ISelectQuery";
@@ -5,7 +6,7 @@ import { ISelectQuery } from "./ISelectQuery";
 /**
  * Allows .where() to use the last joined entity's alias.
  */
-export interface IJoinedQuery<T extends { id: number }, R extends T | T[], P = T> extends IQueryBase<T, R, P> {
+export interface IJoinedQuery<T extends EntityBase, R extends T | T[], P = T> extends IQueryBase<T, R, P> {
     /**
      * Selects a property from the last joined entity to select while performing an inner query.
      * @param propertySelector Property selection lambda for the property to select.
