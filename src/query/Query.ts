@@ -1,3 +1,4 @@
+import { EntityBase } from "../types/EntityBase";
 import { QueryWhereType } from "../enums/QueryWhereType";
 import { QueryMode } from "../enums/QueryMode";
 import { SqlConstants } from "../constants/SqlConstants";
@@ -13,7 +14,7 @@ import { QueryBuilderPart } from "./QueryBuilderPart";
 import { nameof } from "ts-simple-nameof";
 import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
-export class Query<T extends { id: number }, R extends T | T[], P = T> implements IQuery<T, R, P>, IJoinedQuery<T, R, P>, IComparableQuery<T, R, P>, IJoinedComparableQuery<T, R, P>, IQueryInternal<T, R, P>, ISelectQueryInternal<T, R, P> {
+export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQuery<T, R, P>, IJoinedQuery<T, R, P>, IComparableQuery<T, R, P>, IJoinedComparableQuery<T, R, P>, IQueryInternal<T, R, P>, ISelectQueryInternal<T, R, P> {
     private readonly _getAction: () => Promise<R>;
     private readonly _includeAliasHistory: string[];
     private readonly _initialAlias: string;
@@ -181,7 +182,8 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
         this._queryParts.push(new QueryBuilderPart(
-            this._query.orderBy, [orderProperty, "ASC"]
+            this._query.orderBy,
+            [orderProperty, "ASC"]
         ));
         return this;
     }
@@ -190,7 +192,8 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
         this._queryParts.push(new QueryBuilderPart(
-            this._query.orderBy, [orderProperty, "DESC"]
+            this._query.orderBy,
+            [orderProperty, "DESC"]
         ));
         return this;
     }
@@ -238,7 +241,8 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
         this._queryParts.push(new QueryBuilderPart(
-            this._query.addOrderBy, [orderProperty, "ASC"]
+            this._query.addOrderBy,
+            [orderProperty, "ASC"]
         ));
         return this;
     }
@@ -247,7 +251,8 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
         this._queryParts.push(new QueryBuilderPart(
-            this._query.addOrderBy, [orderProperty, "DESC"]
+            this._query.addOrderBy,
+            [orderProperty, "DESC"]
         ));
         return this;
     }
@@ -513,7 +518,8 @@ export class Query<T extends { id: number }, R extends T | T[], P = T> implement
             this._includeAliasHistory.push(resultAlias);
             const queryProperty: string = `${queryAlias}.${propertyName}`;
             this._queryParts.push(new QueryBuilderPart(
-                queryAction, [queryProperty, resultAlias]
+                queryAction,
+                [queryProperty, resultAlias]
             ));
         }
         return <IQuery<T, R, S>><any>this;

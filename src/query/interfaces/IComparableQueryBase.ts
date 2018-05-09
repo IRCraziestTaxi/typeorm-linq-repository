@@ -1,9 +1,10 @@
+import { EntityBase } from "../../types/EntityBase";
 import { IJoinedComparableQuery } from "./IJoinedComparableQuery";
 
 /**
  * Enables IComparableQuery and IJoinedComparableQuery to join a relation from the current Query type.
  */
-export interface IComparableQueryBase<T extends { id: number }, R extends T | T[], P = T> {
+export interface IComparableQueryBase<T extends EntityBase, R extends T | T[], P = T> {
     /**
      * Joins a subsequent navigation property on the previously joined relationship of type P for where conditions on that property.
      * @type {S} The type of the joined navigation property.

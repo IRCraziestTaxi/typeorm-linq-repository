@@ -1,3 +1,4 @@
+import { EntityBase } from "../../types/EntityBase";
 import { IQuery } from "./IQuery";
 import { IQueryBuilderPart } from "./IQueryBuilderPart";
 import { SelectQueryBuilder } from "typeorm";
@@ -5,7 +6,7 @@ import { SelectQueryBuilder } from "typeorm";
 /**
  * Contains properties used internally by the Query class to construct TypeORM QueryBuilder queries from Queries.
  */
-export interface IQueryInternal<T extends { id: number }, R extends T | T[], P = T> extends IQuery<T, R, P> {
+export interface IQueryInternal<T extends EntityBase, R extends T | T[], P = T> extends IQuery<T, R, P> {
     /**
      * Gets the underlying database action used by the Query's SelectQueryBuilder. Normally only used internally by the Query class for innery Queries.
      */

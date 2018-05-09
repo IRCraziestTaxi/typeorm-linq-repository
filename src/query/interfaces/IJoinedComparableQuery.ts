@@ -1,10 +1,11 @@
+import { EntityBase } from "../../types/EntityBase";
 import { IComparableQueryBase } from "./IComparableQueryBase";
 import { IQuery } from "./IQuery";
 
 /**
  * Finalizes the comparing portion of a Query operation by performing comparison with the specified joined value.
  */
-export interface IJoinedComparableQuery<T extends { id: number }, R extends T | T[], P = T> extends IComparableQueryBase<T, R, P> {
+export interface IJoinedComparableQuery<T extends EntityBase, R extends T | T[], P = T> extends IComparableQueryBase<T, R, P> {
     /**
      * Determines whether the property specified in the last "where" is equal to the specified property on the last joined entity.
      * @param selector Property selection lambda for property to compare, ex. x => x.prop
