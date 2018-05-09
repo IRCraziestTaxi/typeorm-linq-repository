@@ -1,3 +1,4 @@
+import { EntityBase } from "../../types/EntityBase";
 import { IComparableQueryBase } from "./IComparableQueryBase";
 import { IJoinedComparableQuery } from "./IJoinedComparableQuery";
 import { IQuery } from "./IQuery";
@@ -6,7 +7,7 @@ import { ISelectQuery } from "./ISelectQuery";
 /**
  * Finalizes the comparison portion of a Query operation or joins a relation or foreign entity against which to compare a value.
  */
-export interface IComparableQuery<T extends { id: number }, R extends T | T[], P = T> extends IComparableQueryBase<T, R, P> {
+export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T> extends IComparableQueryBase<T, R, P> {
     /**
      * Finds results where the specified property starts with the provided string (using LIKE "string%").
      */

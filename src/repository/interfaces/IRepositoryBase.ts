@@ -1,10 +1,11 @@
-import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../../query/interfaces/IQuery";
+import { EntityBase } from "../../types/EntityBase";
+import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
 /**
  * Base repository operations for TypeORM entities.
  */
-export interface IRepositoryBase<T extends { id: number }> {
+export interface IRepositoryBase<T extends EntityBase> {
     /**
      * Creates one or more entities in the database.
      * @param entities The entity or entities to create.
