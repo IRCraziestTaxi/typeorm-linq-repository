@@ -1,1 +1,1 @@
-export declare type EntityBase = { id?: number };
+export declare type EntityBase = { id?: number | string };

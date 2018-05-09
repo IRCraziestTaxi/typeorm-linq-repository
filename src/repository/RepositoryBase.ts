@@ -60,7 +60,7 @@ export abstract class RepositoryBase<T extends EntityBase> implements IRepositor
         return query;
     }
 
-    public getById(id: number): IQuery<T, T> {
+    public getById(id: number | string): IQuery<T, T> {
         const alias: string = "entity";
         let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder(alias);
         queryBuilder = queryBuilder.where(`${alias}.id = :id`, { id: id });
