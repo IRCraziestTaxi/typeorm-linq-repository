@@ -19,7 +19,7 @@ export interface IRepositoryBase<T extends EntityBase> {
      * Deletes one or more entities from the database.
      * @param entities The entity or entities to delete or the ID of the entity to delete.
      */
-    delete(entities: number | T | T[]): Promise<boolean>;
+    delete(entities: number | string | T | T[]): Promise<boolean>;
     /**
      * Returns a Query returning a set of results.
      */
@@ -28,7 +28,7 @@ export interface IRepositoryBase<T extends EntityBase> {
      * Finds one entity with the specified ID.
      * @param id The ID of the entity to find.
      */
-    getById(id: number): IQuery<T, T>;
+    getById(id: number | string): IQuery<T, T>;
     /**
      * Returns a Query returning one entity.
      */
