@@ -10,22 +10,30 @@ import { DeleteResult, getConnectionManager, Repository, SelectQueryBuilder } fr
 export abstract class RepositoryBase<T extends EntityBase> implements IRepositoryBase<T> {
     protected readonly _repository: Repository<T>;
 
-    public constructor(entityType: { new(...params: any[]): T; }) {
+    private readonly _autoGenerateId: boolean;
+
+    /**
+     * Constructs the repository for the specified entity with, unless otherwise specified, a property named "id" that is auto-generated.
+     * @param entityType The entity whose repository to create.
+     * @param autoGenerateId True if the entity implements a property named "id" that is auto-generated; defaults to true.
+     */
+    public constructor(
+        entityType: { new(...params: any[]): T; },
+        autoGenerateId: boolean = true
+    ) {
         this._repository = getConnectionManager().get().getRepository<T>(entityType);
+        this._autoGenerateId = autoGenerateId;
     }
 
     public create<E extends T | T[]>(entities: E): Promise<E> {
-        if (entities instanceof Array) {
-            for (let entity of (<T[]>entities)) {
-                // For GUID IDs, do not set to undefined to support auto-generated IDs.
-                if (typeof (entity.id) !== "string") {
+        if (this._autoGenerateId) {
+            // Set "id" to undefined in order to allow auto-generation.
+            if (entities instanceof Array) {
+                for (let entity of (<T[]>entities)) {
                     entity.id = undefined;
                 }
             }
-        }
-        else {
-            // For GUID IDs, do not set to undefined to support auto-generated IDs.
-            if (typeof ((<T>entities).id) !== "string") {
+            else {
                 (<T>entities).id = undefined;
             }
         }
@@ -37,7 +45,7 @@ export abstract class RepositoryBase<T extends EntityBase> implements IRepositor
         return this._repository.createQueryBuilder(alias);
     }
 
-    public delete(entities: number | T | T[]): Promise<boolean> {
+    public delete(entities: number | string | T | T[]): Promise<boolean> {
         let deletePromise: Promise<DeleteResult | T | T[]> = null;
 
         if (typeof (entities) === "number") {
