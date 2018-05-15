@@ -48,7 +48,7 @@ export abstract class RepositoryBase<T extends EntityBase> implements IRepositor
     public delete(entities: number | string | T | T[]): Promise<boolean> {
         let deletePromise: Promise<DeleteResult | T | T[]> = null;
 
-        if (typeof (entities) === "number") {
+        if (typeof (entities) === "number" || typeof (entities) === "string") {
             deletePromise = this._repository.delete(entities);
         }
         else {
