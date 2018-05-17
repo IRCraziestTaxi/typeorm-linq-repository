@@ -1,6 +1,7 @@
 import { IQuery } from "../query/interfaces/IQuery";
 import { Query } from "../query/Query";
 import { EntityBase } from "../types/EntityBase";
+import { EntityConstructor } from "../types/EntityConstructor";
 import { IRepositoryBase } from "./interfaces/IRepositoryBase";
 import { DeleteResult, getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
 
@@ -15,13 +16,42 @@ export abstract class RepositoryBase<T extends EntityBase> implements IRepositor
     /**
      * Constructs the repository for the specified entity with, unless otherwise specified, a property named "id" that is auto-generated.
      * @param entityType The entity whose repository to create.
-     * @param autoGenerateId True if the entity implements a property named "id" that is auto-generated; defaults to true.
      */
+    public constructor(entityType: EntityConstructor<T>);
+    /**
+    * Constructs the repository for the specified entity with, unless otherwise specified, a property named "id" that is auto-generated.
+    * @param entityType The entity whose repository to create.
+    * @param connectionName The name of the database connection to use to create the repository.
+    */
+    public constructor(entityType: EntityConstructor<T>, connectionName: string);
+    /**
+    * Constructs the repository for the specified entity with, unless otherwise specified, a property named "id" that is auto-generated.
+    * @param entityType The entity whose repository to create.
+    * @param autoGenerateId True if the entity implements a property named "id" that is auto-generated; defaults to true.
+    */
+    public constructor(entityType: EntityConstructor<T>, autoGenerateId: boolean);
+    /**
+    * Constructs the repository for the specified entity with, unless otherwise specified, a property named "id" that is auto-generated.
+    * @param entityType The entity whose repository to create.
+    * @param connectionName The name of the database connection to use to create the repository.
+    * @param autoGenerateId True if the entity implements a property named "id" that is auto-generated; defaults to true.
+    */
+    public constructor(entityType: EntityConstructor<T>, connectionName: string, autoGenerateId: boolean);
     public constructor(
-        entityType: { new(...params: any[]): T; },
+        entityType: EntityConstructor<T>,
+        connectionNameOrAutoGenerateId: string | boolean = null,
         autoGenerateId: boolean = true
     ) {
-        this._repository = getConnectionManager().get().getRepository<T>(entityType);
+        let connectionName: string;
+
+        if (typeof (connectionNameOrAutoGenerateId) === "string") {
+            connectionName = connectionNameOrAutoGenerateId as string;
+        }
+        else if (typeof (connectionNameOrAutoGenerateId) === "boolean") {
+            autoGenerateId = connectionNameOrAutoGenerateId as boolean;
+        }
+
+        this._repository = getConnectionManager().get(connectionName).getRepository<T>(entityType);
         this._autoGenerateId = autoGenerateId;
     }
 
