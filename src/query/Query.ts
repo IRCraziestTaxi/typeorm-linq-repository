@@ -1,4 +1,6 @@
 import { EntityBase } from "../types/EntityBase";
+import { QueryConditionOptions } from "../types/QueryConditionOptions";
+import { QueryConditionOptionsInternal } from "../types/QueryConditionOptionsInternal";
 import { QueryWhereType } from "../enums/QueryWhereType";
 import { QueryMode } from "../enums/QueryMode";
 import { SqlConstants } from "../constants/SqlConstants";
@@ -14,7 +16,12 @@ import { QueryBuilderPart } from "./QueryBuilderPart";
 import { nameof } from "ts-simple-nameof";
 import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
-export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQuery<T, R, P>, IJoinedQuery<T, R, P>, IComparableQuery<T, R, P>, IJoinedComparableQuery<T, R, P>, IQueryInternal<T, R, P>, ISelectQueryInternal<T, R, P> {
+export class Query<T extends EntityBase, R extends T | T[], P = T>
+    implements IQuery<T, R, P>, IJoinedQuery<T, R, P>,
+    IComparableQuery<T, R, P>,
+    IJoinedComparableQuery<T, R, P>,
+    IQueryInternal<T, R, P>,
+    ISelectQueryInternal<T, R, P> {
     private readonly _getAction: () => Promise<R>;
     private readonly _includeAliasHistory: string[];
     private readonly _initialAlias: string;
@@ -63,28 +70,50 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
         return this.andOr(propertySelector, SqlConstants.OPERATOR_AND, this._query.andWhere);
     }
 
-    public beginsWith(value: string): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_LIKE, value, true, true, false);
+    public beginsWith(value: string, options?: QueryConditionOptions): IQuery<T, R, P> {
+        return this.completeWhere(
+            SqlConstants.OPERATOR_LIKE,
+            value,
+            {
+                beginsWith: true
+            },
+            options
+        );
     }
 
     public catch(rejected: (error: any) => void | Promise<any> | IQuery<any, any>): Promise<any> {
         return this.toPromise().catch(rejected);
     }
 
-    public contains(value: string): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_LIKE, value, true, true, true);
+    public contains(value: string, options?: QueryConditionOptions): IQuery<T, R, P> {
+        return this.completeWhere(
+            SqlConstants.OPERATOR_LIKE,
+            value,
+            {
+                beginsWith: true,
+                endsWith: true
+            },
+            options
+        );
     }
 
-    public endsWith(value: string): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_LIKE, value, true, false, true);
+    public endsWith(value: string, options?: QueryConditionOptions): IQuery<T, R, P> {
+        return this.completeWhere(
+            SqlConstants.OPERATOR_LIKE,
+            value,
+            {
+                endsWith: true
+            },
+            options
+        );
     }
 
-    public equal(value: string | number | boolean): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_EQUAL, value);
+    public equal(value: string | number | boolean, options?: QueryConditionOptions): IQuery<T, R, P> {
+        return this.completeWhere(SqlConstants.OPERATOR_EQUAL, value, null, options);
     }
 
-    public equalJoined(selector: (obj: P) => any): IQuery<T, R, P> {
-        return this.completeJoinedWhere(SqlConstants.OPERATOR_EQUAL, selector);
+    public equalJoined(selector: (obj: P) => any, options?: QueryConditionOptions): IQuery<T, R, P> {
+        return this.completeJoinedWhere(SqlConstants.OPERATOR_EQUAL, selector, options);
     }
 
     // <any> is necessary here because the usage of this method depends on the interface from which it was called.
@@ -108,8 +137,15 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
         return this.completeJoinedWhere(SqlConstants.OPERATOR_GREATER_EQUAL, selector);
     }
 
-    public in(include: string[] | number[]): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_IN, `(${include.join(", ")})`);
+    public in(include: string[] | number[], options?: QueryConditionOptions): IQuery<T, R, P> {
+        // If comparing strings, must escape them as strings in the query.
+        this.escapeStringArray(include as string[]);
+        return this.completeWhere(
+            SqlConstants.OPERATOR_IN,
+            `(${include.join(", ")})`,
+            { quoteString: false },
+            options
+        );
     }
 
     public include<S>(propertySelector: (obj: T) => S | S[]): IQuery<T, R, S> {
@@ -126,11 +162,11 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
     }
 
     public isNotNull(): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_IS, SqlConstants.OPERATOR_NOT_NULL, false);
+        return this.completeWhere(SqlConstants.OPERATOR_IS, SqlConstants.OPERATOR_NOT_NULL, { quoteString: false });
     }
 
     public isNull(): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_IS, SqlConstants.OPERATOR_NULL, false);
+        return this.completeWhere(SqlConstants.OPERATOR_IS, SqlConstants.OPERATOR_NULL, { quoteString: false });
     }
 
     public isTrue(): IQuery<T, R, P> {
@@ -140,6 +176,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
 
     public join<S extends Object>(propertySelector: (obj: T) => S | S[]): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
         return this.joinPropertyUsingAlias(propertySelector, this._initialAlias);
+    }
+
+    public joinAlso<S extends Object>(propertySelector: (obj: T) => S | S[]): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
+        return this.joinPropertyUsingAlias(propertySelector, this._initialAlias, this._query.leftJoin);
     }
 
     public lessThan(value: number): IQuery<T, R, P> {
@@ -158,16 +198,23 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
         return this.completeJoinedWhere(SqlConstants.OPERATOR_LESS_EQUAL, selector);
     }
 
-    public notEqual(value: string | number | boolean): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_NOT_EQUAL, value);
+    public notEqual(value: string | number | boolean, options?: QueryConditionOptions): IQuery<T, R, P> {
+        return this.completeWhere(SqlConstants.OPERATOR_NOT_EQUAL, value, null, options);
     }
 
-    public notEqualJoined(selector: (obj: P) => any): IQuery<T, R, P> {
-        return this.completeJoinedWhere(SqlConstants.OPERATOR_NOT_EQUAL, selector);
+    public notEqualJoined(selector: (obj: P) => any, options?: QueryConditionOptions): IQuery<T, R, P> {
+        return this.completeJoinedWhere(SqlConstants.OPERATOR_NOT_EQUAL, selector, options);
     }
 
-    public notIn(exclude: string[] | number[]): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_NOT_IN, `(${exclude.join(", ")})`);
+    public notIn(exclude: string[] | number[], options?: QueryConditionOptions): IQuery<T, R, P> {
+        // If comparing strings, must escape them as strings in the query.
+        this.escapeStringArray(exclude as string[]);
+        return this.completeWhere(
+            SqlConstants.OPERATOR_NOT_IN,
+            `(${exclude.join(", ")})`,
+            { quoteString: false },
+            options
+        );
     }
 
     public notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P> {
@@ -196,6 +243,13 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
             [orderProperty, "DESC"]
         ));
         return this;
+    }
+
+    public reset(): IQuery<T, R, T> {
+        this._lastAlias = this._initialAlias;
+        // Exit the "join chain" so that additional comparisons may be made on the base entity.
+        this._queryWhereType = QueryWhereType.Normal;
+        return <IQuery<T, R, T>><any>this;
     }
 
     public select(propertySelector: (obj: any) => any): ISelectQuery<T, R, T> | ISelectQuery<T, R, P> {
@@ -263,6 +317,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
 
     public thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S> | IComparableQuery<T, R, P> | any {
         return this.joinPropertyUsingAlias(propertySelector, this._lastAlias);
+    }
+
+    public thenJoinAlso<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S> | IComparableQuery<T, R, P> | any {
+        return this.joinPropertyUsingAlias(propertySelector, this._lastAlias, this._query.leftJoin);
     }
 
     public toPromise(): Promise<R> {
@@ -334,7 +392,8 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
         else {
             const where: string = `${this._lastAlias}.${whereProperty}`;
             this._queryParts.push(new QueryBuilderPart(
-                queryAction, [where]
+                queryAction,
+                [where]
             ));
         }
 
@@ -353,15 +412,64 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
         return query.query;
     }
 
-    private completeJoinedWhere(operator: string, selector: (obj: P) => any): IQuery<T, R, P> {
+    private completeJoinedWhere(
+        operator: string,
+        selector: (obj: P) => any,
+        options?: QueryConditionOptions
+    ): IQuery<T, R, P> {
         const selectedProperty: string = nameof<P>(selector);
         const compareValue: string = `${this._lastAlias}.${selectedProperty}`;
         // compareValue is a string but should be treated as a join property
         // (not a quoted string) in the query, so use "false" for the "quoteString" argument.
-        return this.completeWhere(operator, compareValue, false);
+        // If the user specifies a matchCase option, then assume the property is, in fact, a string
+        // and allow completeWhere to apply case insensitivity if necessary.
+        return this.completeWhere(
+            operator,
+            compareValue,
+            {
+                joiningString: !!options && typeof (options.matchCase) === "boolean",
+                quoteString: false
+            },
+            options
+        );
     }
 
-    private completeWhere(operator: string, value: string | number | boolean, quoteString: boolean = true, beginsWith: boolean = false, endsWith: boolean = false): IQuery<T, R, P> {
+    private completeWhere(
+        operator: string,
+        value: string | number | boolean,
+        optionsInternal?: QueryConditionOptionsInternal,
+        options?: QueryConditionOptions
+    ): IQuery<T, R, P> {
+        let beginsWith: boolean = false;
+        let endsWith: boolean = false;
+        let joiningString: boolean = false;
+        let quoteString: boolean = true;
+        let matchCase: boolean = false;
+
+        if (optionsInternal) {
+            if (typeof (optionsInternal.beginsWith) === "boolean") {
+                beginsWith = optionsInternal.beginsWith;
+            }
+
+            if (typeof (optionsInternal.endsWith) === "boolean") {
+                endsWith = optionsInternal.endsWith;
+            }
+
+            if (typeof (optionsInternal.joiningString) === "boolean") {
+                joiningString = optionsInternal.joiningString;
+            }
+
+            if (typeof (optionsInternal.quoteString) === "boolean") {
+                quoteString = optionsInternal.quoteString;
+            }
+        }
+
+        if (options) {
+            if (typeof (options.matchCase) === "boolean") {
+                matchCase = options.matchCase;
+            }
+        }
+
         if (beginsWith) {
             value += "%";
         }
@@ -369,7 +477,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
             value = `%${value}`;
         }
 
-        if (typeof value === "string" && quoteString) {
+        if (typeof (value) === "string" && quoteString) {
             value = value.replace(/'/g, "''");
             value = `'${value}'`;
         }
@@ -391,8 +499,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
                 ) || (
                     // or a join condition:
                     this._queryWhereType === QueryWhereType.Joined && (
-                        part.queryAction == this._query.innerJoin ||
-                        part.queryAction == this._query.leftJoinAndSelect
+                        part.queryAction == this._query.innerJoin
+                        || part.queryAction == this._query.leftJoin
+                        || part.queryAction == this._query.leftJoinAndSelect
                     ) && part.queryParams.length === 3
                 )
             ) {
@@ -415,6 +524,12 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
             const part: IQueryBuilderPart<T> = wherePart;
             // "includedProperty.property"
             let joinCondition: string = (<[string]>part.queryParams).pop();
+
+            if (typeof (value) === "string" && (quoteString || joiningString) && !matchCase) {
+                value = value.toLowerCase();
+                joinCondition = `LOWER(${joinCondition})`;
+            }
+
             // "includedProperty.property = 'something'"
             joinCondition += ` ${operator} ${value}`;
             (<[string]>part.queryParams).push(joinCondition);
@@ -426,6 +541,11 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
             const part: IQueryBuilderPart<T> = wherePart;
             // "alias.property"
             let where: string = (<[string]>part.queryParams).pop();
+
+            if (typeof (value) === "string" && (quoteString || joiningString) && !matchCase) {
+                value = value.toLowerCase();
+                where = `LOWER(${where})`;
+            }
 
             where += ` ${operator} ${value}`;
             (<[string, ObjectLiteral]>part.queryParams).push(where);
@@ -472,6 +592,14 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
         this._queryParts.push(targetQueryPart);
     }
 
+    private escapeStringArray(array: string[]): void {
+        array.forEach((value, i) => {
+            if (typeof (value) === "string") {
+                array[i] = `'${value}'`;
+            }
+        });
+    }
+
     private includeOrExcludeFromInnerQuery<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQueryInternal<TI, RI, PI1>, operator: string): IQuery<T, R, P> {
         innerQuery.queryParts.unshift(new QueryBuilderPart(
             innerQuery.query.select, [innerQuery.selected]
@@ -479,7 +607,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
 
         // Use <any> since all that matters is that the base type of any query contains a property named "id".
         const query: string = this.buildQuery(<any>innerQuery).getQuery();
-        this.completeWhere(operator, `(${query})`, false);
+        this.completeWhere(operator, `(${query})`, { quoteString: false });
         return this;
     }
 
@@ -525,8 +653,12 @@ export class Query<T extends EntityBase, R extends T | T[], P = T> implements IQ
         return <IQuery<T, R, S>><any>this;
     }
 
-    private joinPropertyUsingAlias<S extends Object>(propertySelector: (obj: T | P) => S | S[], queryAlias: string): IQuery<T, R, S> {
-        return this.joinOrIncludePropertyUsingAlias(propertySelector, queryAlias, this._query.innerJoin);
+    private joinPropertyUsingAlias<S extends Object>(
+        propertySelector: (obj: T | P) => S | S[],
+        queryAlias: string,
+        queryAction: (...params: any[]) => SelectQueryBuilder<T> = this._query.innerJoin
+    ): IQuery<T, R, S> {
+        return this.joinOrIncludePropertyUsingAlias(propertySelector, queryAlias, queryAction);
     }
 
     private setJoinIfNotCompare(): void {

@@ -212,13 +212,35 @@ The following query conditions are available for basic comparisons:
 
 `inSelected()` and `notInSelected()` are also available and are covered later in this guide.
 
+### String Comparison
+When comparing strings, the default behavior is to not match case (case-insensitive comparison).
+
+If a case-sensitive comparison is desired, use the `matchCase` option when executing a comparison.
+
+```ts
+// Perform a case-sensitive comparison rather than the default case-insensitive.
+equal(value, { matchCase: true });
+```
+
+Note that, due to a lack of type reflection in JavaScript, the opposite is true for comparing values with joined entities. See the Comparing Values With Joined Entities section below.
+
 ### Inner Joins
 Filter joined relations by using `where()`, `and()`, and `or()` on inner joins using `join()` and `thenJoin()`.
 
 ```typescript
-this._userRepository.getAll().join(u => u.posts).where(p => p.archived).isTrue();
+this._userRepository
+    .getAll()
+    .join(u => u.posts)
+    .where(p => p.archived)
+    .isTrue();
 
-this._userRepository.getOne().join(u => u.posts).where(p => p.flagged).isTrue().and(p => p.date).greaterThan(date);
+this._userRepository
+    .getOne()
+    .join(u => u.posts)
+    .where(p => p.flagged)
+    .isTrue()
+    .and(p => p.date)
+    .greaterThan(date);
 ```
 
 Just as with `include()` and `thenInclude()`, `join()` always uses the query's base type, while `thenJoin()` continues to use the last joined entity's type.
@@ -237,6 +259,9 @@ this._postRepository
     .where(u => u.dateOfBirth)
     .lessThan(date);
 ```
+
+### Left Joins
+As the above `join()` and `thenJoin()` perform an `INNER JOIN`, desired results may be lost if you wish to not exclude previously included results if the joined relations fail the join condition. Filter joined relations while not excluding previously included results by using `joinAlso()` and `thenJoinAlso()` to perform a `LEFT JOIN` instead.
 
 ### Filtering Included Relationships
 Similarly, you may filter included relationships using `where()`, `and()`, and `or()`.
@@ -274,6 +299,14 @@ The following query conditions are available for comparisons on related entities
 `lessThanOrEqualJoined(selector: (obj: P) => any)`: Determines whether the property specified in the last "where" is less than or equal to the specified property on the last joined entity.
 
 `notEqualJoined(selector: (obj: P) => any)`: Determines whether the property specified in the last "where" is not equal to the specified property on the last joined entity.
+
+### String Comparison When Comparing Values With Joined Entities
+Note that although non-joined string comparisons defaults to case-insensitive comparison, due to a lack of type reflection in JavaScript, the opposite is true for comparing values with joined entities. Therefore, the default behavior when using the above methods is to perform a case sensitive comparison, so you must specify `matchCase: false` when using the above methods if you wish to perform a case-insensitive comparison.
+
+```ts
+// Perform a case-insensitive comparison rather than the default case-sensitive when comparing joined entity's properties.
+equalJoined(x => x.property, { matchCase: false });
+```
 
 ### Including or Excluding Results Within an Inner Query
 To utilize an inner query, use the `inSelected()` and `notInSelected()` methods. Each takes an inner `ISelectQuery`, which is obtained by calling `select()` on the inner query after its construction and simply specifies which value to select from the inner query to project to the `IN` or `NOT IN` list.
