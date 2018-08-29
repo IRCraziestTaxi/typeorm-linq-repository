@@ -34,6 +34,16 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      */
     include<S>(propertySelector: (obj: T) => S | S[]): IQuery<T, R, S>;
     /**
+     * Isolates a group of conditions into one AND clause.
+     * @param and The Query representing the AND conditions to group.
+     */
+    isolatedAnd<S extends Object>(and: (query: IQuery<T, R, P>) => IQuery<T, R, S>): IQuery<T, R, P>;
+    /**
+     * Isolates a group of conditions into one OR clause.
+     * @param or The Query representing the OR conditions to group.
+     */
+    isolatedOr<S extends Object>(or: (query: IQuery<T, R, P>) => IQuery<T, R, S>): IQuery<T, R, P>;
+    /**
      * Joins the specified navigation property using an INNER JOIN
      * (thus excluding results from the joining entity if its joined relationship fails the next join condition)
      * without including it in the results (useful for subsequent join conditions).

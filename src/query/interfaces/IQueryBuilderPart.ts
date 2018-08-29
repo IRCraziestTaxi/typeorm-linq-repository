@@ -1,5 +1,5 @@
 import { EntityBase } from "../../types/EntityBase";
-import { /*ObjectLiteral,*/ SelectQueryBuilder } from "typeorm";
+import { SelectQueryBuilder } from "typeorm";
 
 /**
  * Represents a part of a TypeORM SelectQueryBuilder of type T.

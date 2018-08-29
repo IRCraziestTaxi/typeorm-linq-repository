@@ -1,9 +1,11 @@
+import { nameof } from "ts-simple-nameof";
+import { Brackets, ObjectLiteral, SelectQueryBuilder, WhereExpression } from "typeorm";
+import { SqlConstants } from "../constants/SqlConstants";
+import { QueryMode } from "../enums/QueryMode";
+import { QueryWhereType } from "../enums/QueryWhereType";
 import { EntityBase } from "../types/EntityBase";
 import { QueryConditionOptions } from "../types/QueryConditionOptions";
 import { QueryConditionOptionsInternal } from "../types/QueryConditionOptionsInternal";
-import { QueryWhereType } from "../enums/QueryWhereType";
-import { QueryMode } from "../enums/QueryMode";
-import { SqlConstants } from "../constants/SqlConstants";
 import { IComparableQuery } from "./interfaces/IComparableQuery";
 import { IJoinedComparableQuery } from "./interfaces/IJoinedComparableQuery";
 import { IJoinedQuery } from "./interfaces/IJoinedQuery";
@@ -13,8 +15,6 @@ import { IQueryInternal } from "./interfaces/IQueryInternal";
 import { ISelectQuery } from "./interfaces/ISelectQuery";
 import { ISelectQueryInternal } from "./interfaces/ISelectQueryInternal";
 import { QueryBuilderPart } from "./QueryBuilderPart";
-import { nameof } from "ts-simple-nameof";
-import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
 export class Query<T extends EntityBase, R extends T | T[], P = T>
     implements IQuery<T, R, P>, IJoinedQuery<T, R, P>,
@@ -38,9 +38,13 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
      * @param queryBuilder The QueryBuilder to wrap.
      * @param getAction Either queryBuilder.getOne or queryBuilder.getMany.
      */
-    public constructor(queryBuilder: SelectQueryBuilder<T>, getAction: () => Promise<R>) {
+    public constructor(
+        queryBuilder: SelectQueryBuilder<T>,
+        getAction: () => Promise<R>,
+        includeAliasHistory: string[] = []
+    ) {
         this._getAction = getAction;
-        this._includeAliasHistory = [];
+        this._includeAliasHistory = includeAliasHistory;
         this._initialAlias = queryBuilder.alias;
         this._lastAlias = this._initialAlias;
         this._query = queryBuilder;
@@ -167,6 +171,21 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     public isNull(): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_IS, SqlConstants.OPERATOR_NULL, { quoteString: false });
+    }
+
+    public isolatedAnd<S extends Object>(and: (query: IQuery<T, R, P>) => IQuery<T, R, S>): IQuery<T, R, P> {
+        // TODO: These types are not lining up.
+        return <IQuery<T, R, P>><any>this.isolatedConditions<T, P>(<() => IQuery<T, R, P>><any>and, this._query.andWhere);
+    }
+
+    public isolatedOr<S extends Object>(and: (query: IQuery<T, R, P>) => IQuery<T, R, S>): IQuery<T, R, P> {
+        // TODO: These types are not lining up.
+        return <IQuery<T, R, P>><any>this.isolatedConditions<T, P>(<() => IQuery<T, R, P>><any>and, this._query.orWhere);
+    }
+
+    public isolatedWhere<S extends Object>(where: (query: IQuery<T, R, T>) => IQuery<T, R, S>): IQuery<T, R, T> {
+        // TODO: These types are not lining up.
+        return this.isolatedConditions<T, S>(<() => IQuery<T, R, S>><any>where, this._query.where);
     }
 
     public isTrue(): IQuery<T, R, P> {
@@ -315,11 +334,11 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.includePropertyUsingAlias<S>(propertySelector, this._lastAlias);
     }
 
-    public thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S> | IComparableQuery<T, R, P> | any {
+    public thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
         return this.joinPropertyUsingAlias(propertySelector, this._lastAlias);
     }
 
-    public thenJoinAlso<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S> | IComparableQuery<T, R, P> | any {
+    public thenJoinAlso<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
         return this.joinPropertyUsingAlias(propertySelector, this._lastAlias, this._query.leftJoin);
     }
 
@@ -333,12 +352,17 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     }
 
     public where<S extends Object, F = T | P>(propertySelector: (obj: F) => S): IComparableQuery<T, R, T> | IComparableQuery<T, R, P> | any {
-        const whereProperty: string = nameof<F>(propertySelector);
+        const whereProperties: string = nameof<F>(propertySelector);
+        let whereProperty: string = null;
 
         // In the event of performing a normal where after a join-based where, use the initial alias.
         if (this._queryMode === QueryMode.Get) {
             this._queryWhereType = QueryWhereType.Normal;
             this._lastAlias = this._initialAlias;
+
+            // If accessing multiple properties, join relationships using an INNER JOIN.
+            whereProperty = this.joinMultipleProperties(whereProperties);
+
             const where: string = `${this._lastAlias}.${whereProperty}`;
             this._queryParts.push(new QueryBuilderPart(
                 this._query.where, [where]
@@ -346,6 +370,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         }
         // Otherwise, this where was performed on a join operation.
         else {
+            // If accessing multiple properties, join relationships using an INNER JOIN.
+            whereProperty = this.joinMultipleProperties(whereProperties);
+
             this._queryWhereType = QueryWhereType.Joined;
             this.createJoinCondition(whereProperty);
         }
@@ -379,7 +406,17 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         operation: "AND" | "OR",
         queryAction: (where: string, parameters?: ObjectLiteral) => SelectQueryBuilder<T>
     ): IComparableQuery<T, R, P> {
-        const whereProperty: string = nameof<P>(propertySelector);
+        const whereProperties: string = nameof<P>(propertySelector);
+
+        // If accessing multiple properties during an AND, join relationships using an INNER JOIN.
+        // If accessing multiple properties during an OR, join relationships using a LEFT JOIN.
+        const joinAction: (...params: any[]) => SelectQueryBuilder<T> =
+            operation === "AND"
+                ? this._query.innerJoin
+                : this._query.leftJoin;
+
+        // If accessing multiple properties, join relationships using an INNER JOIN.
+        const whereProperty: string = this.joinMultipleProperties(whereProperties, joinAction);
 
         // A third parameter on the query parameters indicates additional join conditions.
         // Only add a join condition if performing a conditional join.
@@ -404,12 +441,17 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     private buildQuery(query: IQueryInternal<T, R, any>): SelectQueryBuilder<T> {
         // Unpack and apply the QueryBuilder parts.
-        if (query.queryParts.length) {
-            for (const queryPart of query.queryParts) {
-                queryPart.queryAction.call(query.query, ...queryPart.queryParams);
+        this.compileQueryParts(query.queryParts, query.query);
+
+        return query.query;
+    }
+
+    private compileQueryParts<PT>(queryParts: IQueryBuilderPart<PT>[], builder: WhereExpression): void {
+        if (queryParts.length) {
+            for (const queryPart of queryParts) {
+                queryPart.queryAction.call(builder, ...queryPart.queryParams);
             }
         }
-        return query.query;
     }
 
     private completeJoinedWhere(
@@ -615,6 +657,45 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.joinOrIncludePropertyUsingAlias(propertySelector, queryAlias, this._query.leftJoinAndSelect);
     }
 
+    private isolatedConditions<IP, IS>(
+        conditions: (query: IQuery<T, R, P>) => IQuery<T, R, IS>,
+        conditionAction: (...params: any[]) => SelectQueryBuilder<T>
+    ): IQuery<T, R, IP> {
+        const query: Query<T, R, IS> = <Query<T, R, IS>>conditions(<IQuery<T, R, P>>new Query(
+            this._query,
+            this._getAction,
+            this._includeAliasHistory
+        ));
+
+        // Do not include joins in bracketed condition; perform those in the outer query.
+        const conditionParts: IQueryBuilderPart<T>[] =
+            query
+                .queryParts
+                .filter(qp =>
+                    qp.queryAction == query.query.where
+                    || qp.queryAction == query.query.andWhere
+                    || qp.queryAction == query.query.orWhere
+                );
+
+        // Perform joins in the outer query.
+        const joinParts: IQueryBuilderPart<T>[] =
+            query
+                .queryParts
+                .filter(qp => conditionParts.indexOf(qp) < 0);
+        this._queryParts.push(...joinParts);
+
+        this._queryParts.push(new QueryBuilderPart(
+            conditionAction,
+            [
+                new Brackets(qb => {
+                    this.compileQueryParts(conditionParts, qb);
+                })
+            ]
+        ));
+
+        return <IQuery<T, R, IP>><any>this;
+    }
+
     private joinForeignEntity<F extends Object>(foreignEntity: { new(...params: any[]): F; }): IQuery<T, R, F> | IComparableQuery<T, R, F> {
         const entityName: string = nameof(foreignEntity);
         const resultAlias: string = entityName;
@@ -633,8 +714,51 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return <IQuery<T, R, F> | IComparableQuery<T, R, F>><any>this;
     }
 
-    private joinOrIncludePropertyUsingAlias<S extends Object>(propertySelector: (obj: T | P) => S | S[], queryAlias: string, queryAction: (...params: any[]) => SelectQueryBuilder<T>): IQuery<T, R, S> {
-        const propertyName: string = nameof<P>(propertySelector);
+    private joinMultipleProperties(
+        whereProperties: string,
+        joinAction: (...params: any[]) => SelectQueryBuilder<T> = this._query.innerJoin
+    ): string {
+        // Array.map() is used to select a property from a relationship collection.
+        // .where(x => x.relationshipOne.map(y => y.relationshipTwo.map(z => z.relationshipThree)))...
+        // Becomes, via ts-simple-nameof...
+        // "relationshipOne.map(y => y.relationshipTwo.map(z => z.relationshipThree))"
+        // Now get...
+        // "relationshipOne.map(y=>y.relationshipTwo.map(z=>z.relationshipThree))"
+        whereProperties = whereProperties.replace(/ /g, "");
+        // "relationshipOne.relationshipTwo.relationshipThree"
+        whereProperties = whereProperties
+            .replace(/\.map\(([a-zA-Z0-9_]+)=>[a-zA-Z0-9]+/g, "")
+            .replace(/\)/g, "");
+
+        const separatedProperties: string[] = whereProperties.split(".");
+        let whereProperty: string = separatedProperties.pop();
+
+        for (let property of separatedProperties) {
+            // Array.map() is used to select a property from a relationship collection.
+            if (property.indexOf("map(") === 0) {
+                property = property.substring(4)
+            }
+
+            this.joinPropertyUsingAlias(property, this._lastAlias, joinAction);
+        }
+
+        return whereProperty;
+    }
+
+    private joinOrIncludePropertyUsingAlias<S extends Object>(
+        propertySelector: ((obj: T | P) => S | S[]) | string,
+        queryAlias: string,
+        queryAction: (...params: any[]) => SelectQueryBuilder<T>
+    ): IQuery<T, R, S> {
+        let propertyName: string = null;
+
+        if (propertySelector instanceof Function) {
+            propertyName = nameof<P>(propertySelector);
+        }
+        else {
+            propertyName = propertySelector;
+        }
+
         const resultAlias: string = `${queryAlias}_${propertyName}`;
 
         this.setJoinIfNotCompare();
@@ -654,7 +778,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     }
 
     private joinPropertyUsingAlias<S extends Object>(
-        propertySelector: (obj: T | P) => S | S[],
+        propertySelector: ((obj: T | P) => S | S[]) | string,
         queryAlias: string,
         queryAction: (...params: any[]) => SelectQueryBuilder<T> = this._query.innerJoin
     ): IQuery<T, R, S> {
