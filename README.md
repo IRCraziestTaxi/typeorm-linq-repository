@@ -184,29 +184,6 @@ this._userRepository
     .thenInclude(p => p.subscribedUsers);
 ```
 
-### Base Type
-The query can be returned to its base type after a sequence of includes using `usingBaseType()`:
-
-```typescript
-this._userRepository
-    .getAll()
-    .include(u => u.posts)
-    .thenInclude(p => p.comments)
-    .usingBaseType()
-    .orderBy(u => u.email);
-```
-
-Using `include()` after one or more `thenInclude()`s will also return the query to its base type:
-
-```typescript
-this._userRepository
-    .getById(id)
-    .include(u => u.posts)
-    .thenInclude(p => p.comments)
-    .include(u => u.orders)
-    .thenInclude(o => o.items);
-```
-
 ### Filtering Results
 Queries can be filtered on one or more conditions using `where()`, `and()`, and `or()`. Note that, just as with TypeORM's QueryBuilder, using `where()` more than once will overwrite previous `where()`s, so use `and()` and `or()` to add more conditions.
 

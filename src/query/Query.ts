@@ -355,15 +355,18 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         const whereProperties: string = nameof<F>(propertySelector);
         let whereProperty: string = null;
 
+        // Keep up with the last alias in order to restore it after joinMultipleProperties.
+        let lastAlias: string = this._lastAlias;
+
         // In the event of performing a normal where after a join-based where, use the initial alias.
         if (this._queryMode === QueryMode.Get) {
             this._queryWhereType = QueryWhereType.Normal;
-            this._lastAlias = this._initialAlias;
+            lastAlias = this._initialAlias;
 
             // If accessing multiple properties, join relationships using an INNER JOIN.
             whereProperty = this.joinMultipleProperties(whereProperties);
 
-            const where: string = `${this._lastAlias}.${whereProperty}`;
+            const where: string = `${lastAlias}.${whereProperty}`;
             this._queryParts.push(new QueryBuilderPart(
                 this._query.where, [where]
             ));
@@ -376,6 +379,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             this._queryWhereType = QueryWhereType.Joined;
             this.createJoinCondition(whereProperty);
         }
+
+        // Restore the last alias after joinMultipleProperties.
+        this._lastAlias = lastAlias;
 
         this._queryMode = QueryMode.Compare;
 
@@ -415,6 +421,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 ? this._query.innerJoin
                 : this._query.leftJoin;
 
+        // Keep up with the last alias in order to restore it after joinMultipleProperties.
+        let lastAlias: string = this._lastAlias;
+
         // If accessing multiple properties, join relationships using an INNER JOIN.
         const whereProperty: string = this.joinMultipleProperties(whereProperties, joinAction);
 
@@ -433,6 +442,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 [where]
             ));
         }
+
+        // Restore the last alias after joinMultipleProperties.
+        this._lastAlias = lastAlias;
 
         this._queryMode = QueryMode.Compare;
 
