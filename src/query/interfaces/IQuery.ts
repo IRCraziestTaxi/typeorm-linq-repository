@@ -8,6 +8,11 @@ import { ISelectQuery } from "./ISelectQuery";
  */
 export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends IQueryBase<T, R, P> {
     /**
+     * Isolates a group of conditions into one WHERE clause.
+     * @param where The Query representing the WHERE conditions to group.
+     */
+    isolatedWhere<S extends Object>(where: (query: IQuery<T, R, T>) => IQuery<T, R, S>): IQuery<T, R, T>;
+    /**
      * Selects a property from the last joined entity to select while performing an inner query.
      * @param propertySelector Property selection lambda for the property to select.
      */
