@@ -1,4 +1,5 @@
 import { EntityBase } from "../../types/EntityBase";
+import { QueryConditionOptions } from "../../types/QueryConditionOptions";
 import { IComparableQueryBase } from "./IComparableQueryBase";
 import { IQuery } from "./IQuery";
 
@@ -9,8 +10,9 @@ export interface IJoinedComparableQuery<T extends EntityBase, R extends T | T[],
     /**
      * Determines whether the property specified in the last "where" is equal to the specified property on the last joined entity.
      * @param selector Property selection lambda for property to compare, ex. x => x.prop
+     * @param options Options for query conditions such as string case matching.
      */
-    equalJoined(selector: (obj: P) => any): IQuery<T, R, P>;
+    equalJoined(selector: (obj: P) => any, options?: QueryConditionOptions): IQuery<T, R, P>;
     /**
      * Determines whether the property specified in the last "where" is greater than the specified property on the last joined entity.
      * @param selector Property selection lambda for property to compare, ex. x => x.prop
@@ -34,6 +36,7 @@ export interface IJoinedComparableQuery<T extends EntityBase, R extends T | T[],
     /**
      * Determines whether the property specified in the last "where" is not equal to the specified property on the last joined entity.
      * @param selector Property selection lambda for property to compare, ex. x => x.prop
+     * @param options Options for query conditions such as string case matching.
      */
-    notEqualJoined(selector: (obj: P) => any): IQuery<T, R, P>;
+    notEqualJoined(selector: (obj: P) => any, options?: QueryConditionOptions): IQuery<T, R, P>;
 }
