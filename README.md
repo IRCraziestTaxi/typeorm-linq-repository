@@ -52,19 +52,19 @@ For example:
 `IUserRepository.ts`
 ```typescript
 import { IRepositoryBase } from "typeorm-linq-repository";
-import { IUser } from "../../entities/interfaces/IUser";
+import { User } from "../../entities/User";
 
-export interface IUserRepository extends IRepositoryBase<IUser> {
+export interface IUserRepository extends IRepositoryBase<User> {
 }
 ```
 
 `UserRepository.ts`
 ```typescript
 import { RepositoryBase } from "typeorm-linq-repository";
-import { IUser } from "../entities/interfaces/IUser";
 import { User } from "../entities/User";
+import { IUserRepository } from "./interfaces/IUserRepository";
 
-export class UserRepository extends RepositoryBase<IUser> implements IUserRepository {
+export class UserRepository extends RepositoryBase<User> implements IUserRepository {
     public constructor() {
         super(User);
     }
@@ -81,10 +81,10 @@ Repository options include:
 
 ```typescript
 import { RepositoryBase } from "typeorm-linq-repository";
-import { IEntity } from "../entities/interfaces/IEntity";
 import { Entity } from "../entities/Entity";
+import { IEntityRepository } from "./interfaces/IEntityRepository";
 
-export class EntityRepository extends RepositoryBase<IEntity> implements IEntityRepository {
+export class EntityRepository extends RepositoryBase<Entity> implements IEntityRepository {
     public constructor() {
         super(Entity, {
             // This entity has a property named "id" that is not an auto-generated primary key.
@@ -117,10 +117,23 @@ export { RepositoryBase };
 You can query entities for all, many, or one result:
 
 ```typescript
-this._userRepository.getAll(); // Gets all entities.
-this._userRepository.getAll().where(/*...*/); // Gets many entities.
-this._userRepository.getOne().where(/*...*/); // Gets one entity.
-this._userRepository.getById(id); // Finds one entity using its ID.
+ // Gets all entities.
+this._userRepository.getAll();
+
+// Gets many entities.
+this._userRepository
+    .getAll()
+    .where(u => u.admin)
+    .isTrue();
+
+// Gets one entity.
+this._userRepository
+    .getOne()
+    .where(u => u.email)
+    .equal(email);
+
+// Finds one entity using its ID.
+this._userRepository.getById(id);
 ```
 
 ### Type Safe Querying
@@ -201,10 +214,10 @@ Note also that this caveat only applies to "normal" where conditions; a where co
 ```typescript
 this._postRepository
     .getAll()
-    .join((p: IPost) => p.user)
-    .where((u: IUser) => u.id)
+    .join((p: Post) => p.user)
+    .where((u: User) => u.id)
     .equal(id)
-    .where((p: IPost) => p.archived)
+    .where((p: Post) => p.archived)
     .isTrue();
 ```
 
@@ -241,6 +254,7 @@ In order to group conditional clauses into parentheses, use `isolatedWhere()`, `
 this._userRepository
     .getOne()
     .where(u => u.isAdmin)
+    .isTrue()
     .isolatedOr(q => q
         .where(u => u.firstName)
         .equals("John")
@@ -362,10 +376,10 @@ this._songRepository
     .join(s => s.artist)
     .where(a => a.id)
     .equal(artistId)
-    .from<IUserProfileAttribute>(UserProfileAttribute).thenJoin(p => p.genre)/* ... */
+    .from(UserProfileAttribute)
+    .thenJoin(p => p.genre)
+    // ...
 ```
-
-Note that the type argument `IUserProfileAttribute` is not required, but is used in order to project the interface rather than the concrete type of `UserProfileAttribute` as the query's current property type.
 
 ### Comparing Values With Joined Entities
 Perform comparisons with values on joined entities by calling `from()`, `join()`, and `thenJoin()` after calling `where()`, `and()`, or `or()`.
@@ -430,55 +444,52 @@ Given the following models:
 
 `Artist.ts`
 ```typescript
-import { IArtist } from "./interfaces/IArtist";
-import { Song } from "./Song";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Song } from "./Song";
 
 @Entity()
-export class Artist implements IArtist {
+export class Artist {
     @PrimaryGeneratedColumn()
     public id: number;
 
     @Column({ nullable: false })
     public name: string;
 
-    @OneToMany((type: any) => Song, (song: Song) => song.artist)
+    @OneToMany(() => Song, (song: Song) => song.artist)
     public songs: Song[];
 }
 ```
 
 `Genre.ts`
 ```typescript
-import { IGenre } from "./interfaces/IGenre";
-import { SongGenre } from "./SongGenre";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { SongGenre } from "./SongGenre";
 
 @Entity()
-export class Genre implements IGenre {
+export class Genre {
     @PrimaryGeneratedColumn()
     public id: number;
 
     @Column({ nullable: false })
     public name: string;
 
-    @OneToMany((type: any) => SongGenre, (songGenre: SongGenre) => songGenre.genre)
+    @OneToMany(() => SongGenre, (songGenre: SongGenre) => songGenre.genre)
     public songs: SongGenre[];
 }
 ```
 
 `Song.ts`
 ```typescript
-import { ISong } from "./interfaces/ISong";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Artist } from "./Artist";
 import { SongGenre } from "./SongGenre";
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Song implements ISong {
-    @ManyToOne((type: any) => Artist, (artist: Artist) => artist.songs)
+export class Song {
+    @ManyToOne(() => Artist, (artist: Artist) => artist.songs)
     public artist: Artist;
 
-    @OneToMany((type: any) => SongGenre, (songGenre: SongGenre) => songGenre.song)
+    @OneToMany(() => SongGenre, (songGenre: SongGenre) => songGenre.song)
     public genres: SongGenre[];
 
     @PrimaryGeneratedColumn()
@@ -491,35 +502,33 @@ export class Song implements ISong {
 
 `SongGenre.ts`
 ```typescript
-import { ISongGenre } from "./interfaces/ISongGenre";
+import { Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Genre } from "./Genre";
 import { Song } from "./Song";
-import { Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 /**
  * Links a song to a genre.
  */
 @Entity()
-export class Song implements ISong {
-    @ManyToOne((type: any) => Genre, (genre: Genre) => genre.songs)
+export class SongGenre {
+    @ManyToOne(() => Genre, (genre: Genre) => genre.songs)
     public genre: Genre;
 
     @PrimaryGeneratedColumn()
     public id: number;
 
-    @ManyToOne((type: any) => Song, (song: Song) => song.genres)
+    @ManyToOne(() => Song, (song: Song) => song.genres)
     public song: Song;
 }
 ```
 
 `User.ts`
 ```typescript
-import { IUser } from "./interfaces/IUser";
-import { UserProfileAttribute } from "./UserProfileAttribute";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { UserProfileAttribute } from "./UserProfileAttribute";
 
 @Entity()
-export class User implements IUser {
+export class User {
     @Column({ nullable: false })
     public email: string;
 
@@ -529,30 +538,29 @@ export class User implements IUser {
     @Column({ nullable: false })
     public password: string;
 
-    @OneToMany((type: any) => UserProfileAttribute, (profileAttribute: UserProfileAttribute) => profileAttribute.user)
+    @OneToMany(() => UserProfileAttribute, (profileAttribute: UserProfileAttribute) => profileAttribute.user)
     public profile: UserProfileAttribute[];
 }
 ```
 
 `UserProfileAttribute.ts`
 ```typescript
-import { IUserProfileAttribute } from "./interfaces/IUserProfileAttribute";
+import { Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Genre } from "./Genre";
 import { User } from "./User";
-import { Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 /**
  * An attribute of a user's profile specifying a genre that user does not wish to hear.
  */
 @Entity()
-export class UserProfileAttribute implements IUserProfileAttribute {
-    @ManyToOne((type: any) => Genre)
+export class UserProfileAttribute {
+    @ManyToOne(() => Genre)
     public genre: Genre;
 
     @PrimaryGeneratedColumn()
     public id: number;
 
-    @ManyToOne((type: any) => User, (user: User) => user.profile)
+    @ManyToOne(() => User, (user: User) => user.profile)
     public user: User;
 }
 ```
@@ -572,21 +580,19 @@ this._songRepository
             .join(s => s.artist)
             .where(a => a.id)
             .equal(artistId)
-            .from<IUserProfileAttribute>(UserProfileAttribute)
+            .from(UserProfileAttribute)
             .thenJoin(p => p.genre)
             .where(g => g.id)
             .join(s => s.songGenre)
             .thenJoin(sg => sg.genre)
             .equalJoined(g => g.id)
-            .from<IUserProfileAttribute>(UserProfileAttribute)
+            .from(UserProfileAttribute)
             .thenJoin(p => p.user)
             .where(u => u.id)
             .equal(userId)
             .select(s => s.id)
     );
 ```
-
-Note that the type argument `IUserProfileAttribute` is not required, but is used in order to project the interface rather than the concrete type of `UserProfileAttribute` as the query's current property type.
 
 ### Selection Type
 Calling `select()` after completing any comparison operations uses the query's base type. If you wish to select a property from a relation rather than the query's base type, you may call `select()` after one or more joins on the query.
@@ -625,13 +631,25 @@ Queries are transformed into promises whenever you are ready to consume the resu
 Queries can be returned as raw promises:
 
 ```typescript
-this._userRepository.getById(id).toPromise();
+this._userRepository
+    .getById(id)
+    .toPromise();
 ```
 
 Or invoked as a promise on the spot:
 
 ```typescript
-this._userRepository.getById(id).then((user: IUser) => { /* ... */ });
+this._userRepository
+    .getById(id)
+    .then(user => {
+        // ...
+    });
+```
+
+Or, using ES6 async syntax:
+
+```typescript
+const user = await this._userRepository.getById(user);
 ```
 
 ### Using TypeORM's Query Builder
@@ -644,8 +662,13 @@ this._userRepository.createQueryBuilder("user");
 ## Persisting Entities
 The following methods persist and remove entities from the database:
 
-`create(entities: T | T[]): Promise<T | T[]>`: Creates one or more entities.
+```typescript
+// Creates one or more entities.
+create(entities: T | T[]): Promise<T | T[]>;
 
-`delete(entities: number | string | T | T[]): Promise<boolean>`: Deletes one or more entities by reference or one entity by ID.
+// Deletes one or more entities by reference or one entity by ID.
+delete(entities: number | string | T | T[]): Promise<boolean>;
 
-`update(entities: T | T[]): Promise<T | T[]>`: Updates one or more entities.
+// Updates one or more entities.
+update(entities: T | T[]): Promise<T | T[]>;
+```
