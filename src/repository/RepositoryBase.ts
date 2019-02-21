@@ -32,7 +32,9 @@ export abstract class RepositoryBase<T extends EntityBase> implements IRepositor
             }
         }
 
-        this._repository = getConnectionManager().get(connectionName).getRepository<T>(entityType);
+        this._repository = getConnectionManager()
+            .get(connectionName)
+            .getRepository<T>(entityType);
         this._autoGenerateId = autoGenerateId;
     }
 
@@ -40,7 +42,7 @@ export abstract class RepositoryBase<T extends EntityBase> implements IRepositor
         if (this._autoGenerateId) {
             // Set "id" to undefined in order to allow auto-generation.
             if (entities instanceof Array) {
-                for (let entity of (<T[]>entities)) {
+                for (const entity of (<T[]>entities)) {
                     entity.id = undefined;
                 }
             }
@@ -76,16 +78,18 @@ export abstract class RepositoryBase<T extends EntityBase> implements IRepositor
         const query: IQuery<T, T[]> = new Query(
             queryBuilder, queryBuilder.getMany
         );
+
         return query;
     }
 
     public getById(id: number | string): IQuery<T, T> {
         const alias: string = "entity";
         let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder(alias);
-        queryBuilder = queryBuilder.where(`${alias}.id = :id`, { id: id });
+        queryBuilder = queryBuilder.where(`${alias}.id = :id`, { id });
         const query: IQuery<T, T> = new Query(
             queryBuilder, queryBuilder.getOne
         );
+
         return query;
     }
 
@@ -94,6 +98,7 @@ export abstract class RepositoryBase<T extends EntityBase> implements IRepositor
         const query: IQuery<T, T> = new Query(
             queryBuilder, queryBuilder.getOne
         );
+
         return query;
     }
 

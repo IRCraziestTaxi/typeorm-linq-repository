@@ -86,7 +86,8 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     }
 
     public catch(rejected: (error: any) => void | Promise<any> | IQuery<any, any>): Promise<any> {
-        return this.toPromise().catch(rejected);
+        return this.toPromise()
+            .catch(rejected);
     }
 
     public contains(value: string, options?: QueryConditionOptions): IQuery<T, R, P> {
@@ -144,6 +145,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     public in(include: string[] | number[], options?: QueryConditionOptions): IQuery<T, R, P> {
         // If comparing strings, must escape them as strings in the query.
         this.escapeStringArray(include as string[]);
+
         return this.completeWhere(
             SqlConstants.OPERATOR_IN,
             `(${include.join(", ")})`,
@@ -162,6 +164,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     public isFalse(): IQuery<T, R, P> {
         this.equal(false);
+
         return this;
     }
 
@@ -190,6 +193,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     public isTrue(): IQuery<T, R, P> {
         this.equal(true);
+
         return this;
     }
 
@@ -228,6 +232,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     public notIn(exclude: string[] | number[], options?: QueryConditionOptions): IQuery<T, R, P> {
         // If comparing strings, must escape them as strings in the query.
         this.escapeStringArray(exclude as string[]);
+
         return this.completeWhere(
             SqlConstants.OPERATOR_NOT_IN,
             `(${exclude.join(", ")})`,
@@ -251,6 +256,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             this._query.orderBy,
             [orderProperty, "ASC"]
         ));
+
         return this;
     }
 
@@ -261,6 +267,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             this._query.orderBy,
             [orderProperty, "DESC"]
         ));
+
         return this;
     }
 
@@ -268,6 +275,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         this._lastAlias = this._initialAlias;
         // Exit the "join chain" so that additional comparisons may be made on the base entity.
         this._queryWhereType = QueryWhereType.Normal;
+
         return <IQuery<T, R, T>><any>this;
     }
 
@@ -285,6 +293,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         }
 
         this._selectedProperty = `${alias}.${selectedProperty}`;
+
         return this;
     }
 
@@ -294,6 +303,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 this._query.skip, [skip]
             ));
         }
+
         return this;
     }
 
@@ -303,11 +313,13 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 this._query.take, [limit]
             ));
         }
+
         return this;
     }
 
     public then(resolved: (results: R) => void | Promise<any>): Promise<any> {
-        return this.toPromise().then(resolved);
+        return this.toPromise()
+            .then(resolved);
     }
 
     public thenBy(propertySelector: (obj: P) => any): IQuery<T, R, P> {
@@ -317,6 +329,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             this._query.addOrderBy,
             [orderProperty, "ASC"]
         ));
+
         return this;
     }
 
@@ -327,6 +340,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             this._query.addOrderBy,
             [orderProperty, "DESC"]
         ));
+
         return this;
     }
 
@@ -348,6 +362,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     public usingBaseType(): IQuery<T, R, T> {
         this._lastAlias = this._initialAlias;
+
         return <IQuery<T, R, T>><any>this;
     }
 
@@ -422,7 +437,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 : this._query.leftJoin;
 
         // Keep up with the last alias in order to restore it after joinMultipleProperties.
-        let lastAlias: string = this._lastAlias;
+        const lastAlias: string = this._lastAlias;
 
         // If accessing multiple properties, join relationships using an INNER JOIN.
         const whereProperty: string = this.joinMultipleProperties(whereProperties, joinAction);
@@ -473,6 +488,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     ): IQuery<T, R, P> {
         const selectedProperty: string = nameof<P>(selector);
         const compareValue: string = `${this._lastAlias}.${selectedProperty}`;
+
         // compareValue is a string but should be treated as a join property
         // (not a quoted string) in the query, so use "false" for the "quoteString" argument.
         // If the user specifies a matchCase option, then assume the property is, in fact, a string
@@ -546,15 +562,21 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 (
                     // Could either be a normal where function:
                     this._queryWhereType === QueryWhereType.Normal && (
+                        // tslint:disable-next-line: triple-equals
                         part.queryAction == this._query.where ||
+                        // tslint:disable-next-line: triple-equals
                         part.queryAction == this._query.andWhere ||
+                        // tslint:disable-next-line: triple-equals
                         part.queryAction == this._query.orWhere
                     )
                 ) || (
                     // or a join condition:
                     this._queryWhereType === QueryWhereType.Joined && (
+                        // tslint:disable-next-line: triple-equals
                         part.queryAction == this._query.innerJoin
+                        // tslint:disable-next-line: triple-equals
                         || part.queryAction == this._query.leftJoin
+                        // tslint:disable-next-line: triple-equals
                         || part.queryAction == this._query.leftJoinAndSelect
                     ) && part.queryParams.length === 3
                 )
@@ -660,8 +682,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         ));
 
         // Use <any> since all that matters is that the base type of any query contains a property named "id".
-        const query: string = this.buildQuery(<any>innerQuery).getQuery();
+        const query: string = this.buildQuery(<any>innerQuery)
+            .getQuery();
         this.completeWhere(operator, `(${query})`, { quoteString: false });
+
         return this;
     }
 
@@ -684,8 +708,11 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             query
                 .queryParts
                 .filter(qp =>
+                    // tslint:disable-next-line: triple-equals
                     qp.queryAction == query.query.where
+                    // tslint:disable-next-line: triple-equals
                     || qp.queryAction == query.query.andWhere
+                    // tslint:disable-next-line: triple-equals
                     || qp.queryAction == query.query.orWhere
                 );
 
@@ -743,12 +770,12 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             .replace(/\)/g, "");
 
         const separatedProperties: string[] = whereProperties.split(".");
-        let whereProperty: string = separatedProperties.pop();
+        const whereProperty: string = separatedProperties.pop();
 
         for (let property of separatedProperties) {
             // Array.map() is used to select a property from a relationship collection.
             if (property.indexOf("map(") === 0) {
-                property = property.substring(4)
+                property = property.substring(4);
             }
 
             this.joinPropertyUsingAlias(property, this._lastAlias, joinAction);
@@ -786,6 +813,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 [queryProperty, resultAlias]
             ));
         }
+
         return <IQuery<T, R, S>><any>this;
     }
 
