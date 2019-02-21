@@ -2,9 +2,6 @@ import { EntityBase } from "../../types/EntityBase";
 import { IComparableQuery } from "./IComparableQuery";
 import { IJoinedQuery } from "./IJoinedQuery";
 import { IQuery } from "./IQuery";
-import { IQueryBuilderPart } from "./IQueryBuilderPart";
-import { ISelectQuery } from "./ISelectQuery";
-import { SelectQueryBuilder } from "typeorm/query-builder/SelectQueryBuilder";
 
 /**
  * Base set of operations for all Queries that are not in Comparable mode.
@@ -26,7 +23,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @type {F} The type of the foreign entity to join.
      * @param foreignEntity The TypeORM entity whose table to join.
      */
-    from<F extends { id: number }>(foreignEntity: { new (...params: any[]): F; }): IJoinedQuery<T, R, F>;
+    from<F extends { id: number }>(foreignEntity: { new(...params: any[]): F; }): IJoinedQuery<T, R, F>;
     /**
      * Includes the specified navigation property in the queried results.
      * @type {S} The type of the joined navigation property.
@@ -138,7 +135,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @deprecated WARNING: This method was found to be faulty based on its initial intended use,
      * but remains nonetheless in case its use is, in fact, desired.
      * However, you may be looking for **reset()** instead.
-     * 
+     *
      * This method will remain deprecated for a while to alert users who used it based on
      * the initially intended use that it may result in unexpected behavior.
      * The deprecated status will be removed later so that users using it

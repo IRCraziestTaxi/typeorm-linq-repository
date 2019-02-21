@@ -1,10 +1,12 @@
 {
   "name": "typeorm-linq-repository",
-  "version": "1.0.0-alpha.12",
+  "version": "1.0.0-alpha.13",
   "description": "Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "node_modules/.bin/tsc -d",
+    "tslint": "node_modules/.bin/tslint --project ."
   },
   "repository": {
     "type": "git",
@@ -26,10 +28,12 @@
     "ts-simple-nameof": "1.1.0"
   },
   "devDependencies": {
-    "typeorm": "~0.2.9"
+    "tslint": "^5.12.1",
+    "typeorm": "~0.2.13",
+    "typescript": "3.3.3"
   },
   "peerDependencies": {
-    "typeorm": "~0.2.9"
+    "typeorm": "~0.2.13"
   },
   "files": [
     "*.json",

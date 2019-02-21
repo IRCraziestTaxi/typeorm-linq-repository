@@ -1,10 +1,10 @@
-import { EntityBase } from "../types/EntityBase";
-import { IQueryBuilderPart } from './interfaces/IQueryBuilderPart';
 import { SelectQueryBuilder } from "typeorm";
+import { EntityBase } from "../types/EntityBase";
+import { IQueryBuilderPart } from "./interfaces/IQueryBuilderPart";
 
 export class QueryBuilderPart<T extends EntityBase> implements IQueryBuilderPart<T> {
-    private _queryAction: (...params: any[]) => SelectQueryBuilder<T>;
-    private _queryParams: any[];
+    private readonly _queryAction: (...params: any[]) => SelectQueryBuilder<T>;
+    private readonly _queryParams: any[];
 
     public constructor(queryAction: (...params: any[]) => SelectQueryBuilder<T>, queryParams: any[]) {
         this._queryAction = queryAction;

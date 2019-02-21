@@ -1,0 +1,149 @@
+{
+    "rules": {
+        "adjacent-overload-signatures": true,
+        "align": true,
+        "array-type": [
+            true,
+            "array"
+        ],
+        "arrow-parens": [
+            true,
+            "ban-single-arg-parens"
+        ],
+        "binary-expression-operand-order": true,
+        "class-name": true,
+        "comment-format": [
+            true,
+            "check-space"
+        ],
+        "curly": true,
+        "forin": true,
+        "import-spacing": true,
+        "member-access": [
+            true,
+            "check-constructor"
+        ],
+        "member-ordering": [
+            true,
+            {
+                "order": "instance-sandwich"
+            }
+        ],
+        "new-parens": true,
+        "newline-before-return": true,
+        "newline-per-chained-call": true,
+        "no-boolean-literal-compare": true,
+        "no-consecutive-blank-lines": true,
+        "no-construct": true,
+        "no-duplicate-imports": true,
+        "no-duplicate-super": true,
+        "no-duplicate-switch-case": true,
+        "no-duplicate-variable": true,
+        "no-for-in-array": true,
+        "no-internal-module": true,
+        "no-invalid-template-strings": true,
+        "no-invalid-this": true,
+        "no-irregular-whitespace": true,
+        "no-mergeable-namespace": true,
+        "no-parameter-properties": true,
+        "no-shadowed-variable": [
+            true,
+            {
+                "class": true,
+                "enum": true,
+                "function": true,
+                "import": false,
+                "interface": true,
+                "namespace": true,
+                "typeAlias": true,
+                "typeParameter": true
+            }
+        ],
+        "no-string-literal": true,
+        "no-string-throw": true,
+        "no-switch-case-fall-through": true,
+        "no-this-assignment": true,
+        "no-trailing-whitespace": true,
+        "no-unnecessary-callback-wrapper": true,
+        "no-unnecessary-initializer": true,
+        "no-unused-expression": true,
+        "no-var-keyword": true,
+        "number-literal-format": true,
+        "object-literal-key-quotes": [
+            true,
+            "as-needed"
+        ],
+        "object-literal-shorthand": true,
+        "object-literal-sort-keys": [
+            true,
+            "ignore-case"
+        ],
+        "only-arrow-functions": [
+            true,
+            "allow-declarations",
+            "allow-named-functions"
+        ],
+        "prefer-const": true,
+        "prefer-for-of": true,
+        "prefer-method-signature": true,
+        "prefer-object-spread": true,
+        "prefer-readonly": true,
+        "prefer-template": true,
+        "quotemark": [
+            true,
+            "double",
+            "avoid-template"
+        ],
+        "restrict-plus-operands": true,
+        "semicolon": true,
+        "space-before-function-paren": [
+            true,
+            {
+                "anonymous": "never",
+                "asyncArrow": "always",
+                "constructor": "never",
+                "method": "never",
+                "named": "never"
+            }
+        ],
+        "switch-default": true,
+        "switch-final-break": true,
+        "trailing-comma": [
+            true,
+            {
+                "multiline": "never",
+                "singleline": "never"
+            }
+        ],
+        "triple-equals": true,
+        "typedef": [
+            true,
+            "array-destructuring",
+            "call-signature",
+            "member-variable-declaration",
+            "object-destructuring",
+            "parameter",
+            "property-declaration"
+        ],
+        "typedef-whitespace": [
+            true,
+            {
+                "call-signature": "nospace",
+                "index-signature": "nospace",
+                "parameter": "nospace",
+                "property-declaration": "nospace",
+                "variable-declaration": "nospace"
+            },
+            {
+                "call-signature": "onespace",
+                "index-signature": "onespace",
+                "parameter": "onespace",
+                "property-declaration": "onespace",
+                "variable-declaration": "onespace"
+            }
+        ],
+        "unified-signatures": true,
+        "use-isnan": true,
+        "whitespace": true
+    }
+}
