@@ -1,6 +1,6 @@
 {
   "name": "typeorm-linq-repository",
-  "version": "1.0.0-alpha.13",
+  "version": "1.0.0-alpha.14",
   "description": "Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,7 @@
   "devDependencies": {
     "tslint": "^5.12.1",
     "typeorm": "~0.2.13",
-    "typescript": "3.3.3"
+    "typescript": "3.3.3333"
   },
   "peerDependencies": {
     "typeorm": "~0.2.13"
