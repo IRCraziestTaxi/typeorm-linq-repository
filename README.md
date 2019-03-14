@@ -14,7 +14,7 @@ As of version 1.0.0-alpha.14:
 import { LinqRepository } from "typeor-linq-repository";
 import { User } from "../entities/User";
 
-const userRepository: LinqRepository<User> = new LinqRepository<User>(User);
+const userRepository: LinqRepository<User> = new LinqRepository(User);
 ```
 
 Note that, for backwards compatibility, `RepositoryBase` is an alias of `LinqRepository` and may still be imported.
