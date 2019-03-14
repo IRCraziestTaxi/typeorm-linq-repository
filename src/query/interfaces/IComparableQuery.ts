@@ -32,7 +32,7 @@ export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T
      * @param value The value against which to compare.
      * @param options Options for query conditions such as string case matching.
      */
-    equal(value: string | number | boolean, options?: QueryConditionOptions): IQuery<T, R, P>;
+    equal(value: string | number | boolean | Date, options?: QueryConditionOptions): IQuery<T, R, P>;
     /**
      * Joins an unrelated table using a TypeORM entity.
      * @type {F} The type of the foreign entity to join.
@@ -43,12 +43,12 @@ export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T
      * Determines whether the previously selected property is greater than the specified value.
      * @param value The value against which to compare.
      */
-    greaterThan(value: number): IQuery<T, R, P>;
+    greaterThan(value: number | Date): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected property is greater than or equal to the specified value.
      * @param value The value against which to compare.
      */
-    greaterThanOrEqual(value: number): IQuery<T, R, P>;
+    greaterThanOrEqual(value: number | Date): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected value is contained in the specified array of values.
      * @param include The array of values to check for inclusion of the previously selected value.
@@ -85,12 +85,12 @@ export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T
      * Determines whether the previously selected property is less than the specified value.
      * @param value The value against which to compare.
      */
-    lessThan(value: number): IQuery<T, R, P>;
+    lessThan(value: number | Date): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected property is less than or equal to the specified value.
      * @param value The value against which to compare.
      */
-    lessThanOrEqual(value: number): IQuery<T, R, P>;
+    lessThanOrEqual(value: number | Date): IQuery<T, R, P>;
     /**
      * Joins the specified navigation property for where conditions on that property.
      * @type {S} The type of the joined navigation property.
