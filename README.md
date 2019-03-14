@@ -6,6 +6,19 @@ I am very pleased to anounce lots of new functionality in version 1.0.0-alpha.11
 
 ### Latest Changes
 
+As of version 1.0.0-alpha.14:
+
+* No need to extend your repositories from abstract class `RepositoryBase`! `RepositoryBase` has been renamed to `LinqRepository` and is no longer abstract. That means you can simply create a repository as follows:
+
+```ts
+import { LinqRepository } from "typeor-linq-repository";
+import { User } from "../entities/User";
+
+const userRepository: LinqRepository<User> = new LinqRepository(User);
+```
+
+Note that, for backwards compatibility, `RepositoryBase` is an alias of `LinqRepository` and may still be imported.
+
 As of version 1.0.0-alpha.11, the following features have been added:
 
 * Joined properties in `where`, `and`, and `or`

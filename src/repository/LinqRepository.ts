@@ -1,15 +1,15 @@
+import { DeleteResult, getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../query/interfaces/IQuery";
 import { Query } from "../query/Query";
 import { EntityBase } from "../types/EntityBase";
 import { EntityConstructor } from "../types/EntityConstructor";
 import { RepositoryOptions } from "../types/RepositoryOptions";
-import { IRepositoryBase } from "./interfaces/IRepositoryBase";
-import { DeleteResult, getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
+import { ILinqRepository } from "./interfaces/ILinqRepository";
 
 /**
  * Base repository operations for TypeORM entities.
  */
-export abstract class RepositoryBase<T extends EntityBase> implements IRepositoryBase<T> {
+export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> {
     protected readonly _repository: Repository<T>;
 
     private readonly _autoGenerateId: boolean;
