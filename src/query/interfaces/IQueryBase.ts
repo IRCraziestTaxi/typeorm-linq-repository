@@ -1,4 +1,5 @@
 import { EntityBase } from "../../types/EntityBase";
+import { JoinedEntityType } from "../../types/JoinedEntityType";
 import { IComparableQuery } from "./IComparableQuery";
 import { IJoinedQuery } from "./IJoinedQuery";
 import { IQuery } from "./IQuery";
@@ -29,7 +30,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
      */
-    include<S>(propertySelector: (obj: T) => S | S[]): IQuery<T, R, S>;
+    include<S>(propertySelector: (obj: T) => JoinedEntityType<S>): IQuery<T, R, S>;
     /**
      * Isolates a group of conditions into one AND clause.
      * @param and The Query representing the AND conditions to group.
@@ -47,7 +48,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    join<S extends Object>(propertySelector: (obj: T) => S | S[]): IJoinedQuery<T, R, S>;
+    join<S extends Object>(propertySelector: (obj: T) => JoinedEntityType<S>): IJoinedQuery<T, R, S>;
     /**
      * Joins the specified navigation property using a LEFT JOIN
      * (thus including results from the joining entity even if its joined relationship fails the next join condition)
@@ -55,7 +56,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    joinAlso<S extends Object>(propertySelector: (obj: T) => S | S[]): IJoinedQuery<T, R, S>;
+    joinAlso<S extends Object>(propertySelector: (obj: T) => JoinedEntityType<S>): IJoinedQuery<T, R, S>;
     /**
      * Adds an additional logical OR condition for which to query results.
      * @type {S} The type of the joined navigation property.
@@ -107,7 +108,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
      */
-    thenInclude<S extends Object>(propertySelector: (obj: P) => S | S[]): IQuery<T, R, S>;
+    thenInclude<S extends Object>(propertySelector: (obj: P) => JoinedEntityType<S>): IQuery<T, R, S>;
     /**
      * Joins a subsequent navigation property on the previously joined relationship of type P
      * (thus excluding results from the joining entity if its joined relationship fails the next join condition)
@@ -115,7 +116,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IJoinedQuery<T, R, S>;
+    thenJoin<S extends Object>(propertySelector: (obj: P) => JoinedEntityType<S>): IJoinedQuery<T, R, S>;
     /**
      * Joins a subsequent navigation property on the previously joined relationship of type P using a LEFT JOIN
      * (thus including results from the joining entity even if its joined relationship fails the next join condition)
@@ -123,7 +124,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    thenJoinAlso<S extends Object>(propertySelector: (obj: P) => S | S[]): IJoinedQuery<T, R, S>;
+    thenJoinAlso<S extends Object>(propertySelector: (obj: P) => JoinedEntityType<S>): IJoinedQuery<T, R, S>;
     /**
      * Invokes and returns the Promise to get the underlying QueryBuilder's results.
      */
