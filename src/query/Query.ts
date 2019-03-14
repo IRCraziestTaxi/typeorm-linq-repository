@@ -113,7 +113,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         );
     }
 
-    public equal(value: string | number | boolean, options?: QueryConditionOptions): IQuery<T, R, P> {
+    public equal(value: string | number | boolean | Date, options?: QueryConditionOptions): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_EQUAL, value, null, options);
     }
 
@@ -126,7 +126,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.joinForeignEntity(foreignEntity);
     }
 
-    public greaterThan(value: number): IQuery<T, R, P> {
+    public greaterThan(value: number | Date): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_GREATER, value);
     }
 
@@ -134,7 +134,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.completeJoinedWhere(SqlConstants.OPERATOR_GREATER, selector);
     }
 
-    public greaterThanOrEqual(value: number): IQuery<T, R, P> {
+    public greaterThanOrEqual(value: number | Date): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_GREATER_EQUAL, value);
     }
 
@@ -205,7 +205,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.joinPropertyUsingAlias(propertySelector, this._initialAlias, this._query.leftJoin);
     }
 
-    public lessThan(value: number): IQuery<T, R, P> {
+    public lessThan(value: number | Date): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_LESS, value);
     }
 
@@ -213,7 +213,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.completeJoinedWhere(SqlConstants.OPERATOR_LESS, selector);
     }
 
-    public lessThanOrEqual(value: number): IQuery<T, R, P> {
+    public lessThanOrEqual(value: number | Date): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_LESS_EQUAL, value);
     }
 
@@ -221,7 +221,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.completeJoinedWhere(SqlConstants.OPERATOR_LESS_EQUAL, selector);
     }
 
-    public notEqual(value: string | number | boolean, options?: QueryConditionOptions): IQuery<T, R, P> {
+    public notEqual(value: string | number | boolean | Date, options?: QueryConditionOptions): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_NOT_EQUAL, value, null, options);
     }
 
@@ -506,7 +506,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     private completeWhere(
         operator: string,
-        value: string | number | boolean,
+        value: string | number | boolean | Date,
         optionsInternal?: QueryConditionOptionsInternal,
         options?: QueryConditionOptions
     ): IQuery<T, R, P> {
@@ -543,6 +543,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         if (beginsWith) {
             value += "%";
         }
+
         if (endsWith) {
             value = `%${value}`;
         }
@@ -605,6 +606,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 value = value.toLowerCase();
                 joinCondition = `LOWER(${joinCondition})`;
             }
+            else if (value instanceof Date) {
+                value = `'${value.toISOString()}'`;
+            }
 
             // "includedProperty.property = 'something'"
             joinCondition += ` ${operator} ${value}`;
@@ -621,6 +625,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             if (typeof (value) === "string" && (quoteString || joiningString) && !matchCase) {
                 value = value.toLowerCase();
                 where = `LOWER(${where})`;
+            }
+            else if (value instanceof Date) {
+                value = `'${value.toISOString()}'`;
             }
 
             where += ` ${operator} ${value}`;
