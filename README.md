@@ -19,6 +19,10 @@ const userRepository: LinqRepository<User> = new LinqRepository(User);
 
 Note that, for backwards compatibility, `RepositoryBase` is an alias of `LinqRepository` and may still be imported.
 
+* Fixed date comparison.
+
+* Lazy loaded relationships are now supported in joins/includes.
+
 As of version 1.0.0-alpha.11, the following features have been added:
 
 * Joined properties in `where`, `and`, and `or`
@@ -57,8 +61,20 @@ To add `typeorm-linq-repository` and its dependencies to your project using NPM:
 npm install --save typeorm typeorm-linq-repository
 ```
 
+## Linq Repository
+`LinqRepository` is the repository that is constructed to interact with the table represented by the entity used as the type argument for the repository.
+
+`LinqRepository` takes a class type representing a TypeORM model as its constructor argument.
+
+```ts
+import { LinqRepository } from "typeorm-linq-repository";
+import { User } from "../../entities/User";
+
+const userRepository: LinqRepository<User> = new LinqRepository(User);
+```
+
 ## Base Repository
-`RepositoryBase` takes a class type representing a TypeORM model as its constructor argument.
+`RepositoryBase` is now an alias for the renamed `LinqRepository` for backwards compability. Previously, you had to extend a repository class from the abstract `RepositoryBase` in order to construct your repository.
 
 For example:
 

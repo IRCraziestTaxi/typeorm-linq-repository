@@ -1,4 +1,5 @@
 import { EntityBase } from "../../types/EntityBase";
+import { JoinedEntityType } from "../../types/JoinedEntityType";
 import { IJoinedComparableQuery } from "./IJoinedComparableQuery";
 
 /**
@@ -10,5 +11,5 @@ export interface IComparableQueryBase<T extends EntityBase, R extends T | T[], P
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    thenJoin<S extends Object>(propertySelector: (obj: P) => S | S[]): IJoinedComparableQuery<T, R, S>;
+    thenJoin<S extends Object>(propertySelector: (obj: P) => JoinedEntityType<S>): IJoinedComparableQuery<T, R, S>;
 }
