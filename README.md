@@ -383,16 +383,48 @@ this._postRepository
 ### Left Joins
 As the above `join()` and `thenJoin()` perform an `INNER JOIN`, desired results may be lost if you wish to not exclude previously included results if the joined relations fail the join condition. Filter joined relations while not excluding previously included results by using `joinAlso()` and `thenJoinAlso()` to perform a `LEFT JOIN` instead.
 
-### Filtering Included Relationships
-Similarly, you may filter included relationships using `where()`, `and()`, and `or()`.
+### Regarding Included Relationships
+Note that `.include()` and `.thenInclude()` are not intended to work the same way as `.join()`, `.joinAlso()`, `.thenJoin()`, and `.thenJoinAlso()` in conjunction with `.where()`.
 
-```typescript
+That is, using `.include().where()` does NOT behave the same way as `.join().where()` (interpreted in "plain English" as "join where").
+
+`.include()` and `.thenInclude()` were meant to stand alone in their own context rather than filtering the main entity based on joined relationships.
+
+For example:
+
+```ts
 this._userRepository
+    .getMany()
+    // I want to include posts in my results, but I am filtering included posts without filtering user results.
     .include(u => u.posts)
+    // However, I am also filtering on the user itself (.where() after .include() filters on the base type).
+    .where(u => u.active)
+    .isTrue();
+```
+
+On the other hand, if you do intend to include a relationship while also filtering results based on a condition on that included relationship, use `.include()` in conjunction with `.join().where()`, i.e.:
+
+```ts
+this._userRepository
+    .getMany()
+    // Include posts in results.
+    .include(u => u.posts)
+    // Use .join rather than .joinAlso to actually filter user results by post criteria.
+    .join(u => u.posts)
     .where(p => p.archived)
-    .isFalse()
-    .thenInclude(p => p.comments)
-    .where(c => c.flagged)
+    .isTrue();
+```
+
+Finally, if you intend to include a relationship while filtering those included relationships but not filtering out any entities of the base type, then use `.joinAlso().where()` in order to perform a `LEFT JOIN` as opposed to an `INNER JOIN`.
+
+```ts
+this._userRepository
+    .getMany()
+    // Include posts in results.
+    .include(u => u.posts)
+    // Use .joinAlso rather than .join to perform a left join to filter posts but not filter users.
+    .joinAlso(u => u.posts)
+    .where(p => p.archived)
     .isTrue();
 ```
 
