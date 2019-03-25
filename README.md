@@ -733,3 +733,27 @@ delete(entities: number | string | T | T[]): Promise<boolean>;
 // Updates one or more entities.
 update(entities: T | T[]): Promise<T | T[]>;
 ```
+
+## Transaction support
+This library was unfortunately developed without regard to transactions, but another library called [typeorm-transactional-cls-hooked](https://github.com/odavid/typeorm-transactional-cls-hooked) makes utilizing transations extremely easy!
+
+To use this library in conjuntion with `typeorm-linq-repository`, install `typeorm-transactional-cls-hooked` along with its dependencies:
+
+```
+npm install --save typeorm-transactional-cls-hooked cls-hooked
+
+npm install --save-dev @types/cls-hooked
+```
+
+Then, per `typeorm-transactional-cls-hooked`'s documentation, simply patch TypeORM's repository with `typeorm-transactional-cls-hooked`'s base repository when bootstrapping your app:
+
+```ts
+import { initializeTransactionalContext, patchTypeORMRepositoryWithBaseRepository } from "typeorm-transactional-cls-hooked";
+
+// Initialize cls-hooked.
+initializeTransactionalContext();
+// Patch TypeORM's Repository with typeorm-transactional-cls-hooked's BaseRepository.
+patchTypeORMRepositoryWithBaseRepository();
+```
+
+That's it! Now all you need to do is use `typeorm-transactional-cls-hooked`'s `@Transactional()` decorator on methods that persist entities to your repositories. See `typeorm-transactional-cls-hooked`'s for more details.
