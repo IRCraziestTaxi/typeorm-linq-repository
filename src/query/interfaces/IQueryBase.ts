@@ -3,12 +3,11 @@ import { JoinedEntityType } from "../../types/JoinedEntityType";
 import { IComparableQuery } from "./IComparableQuery";
 import { IJoinedQuery } from "./IJoinedQuery";
 import { IQuery } from "./IQuery";
-import { IQueryableQuery } from "./IQueryableQuery";
 
 /**
  * Base set of operations for all Queries that are not in Comparable mode.
  */
-export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> extends IQueryableQuery<T> {
+export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
     /**
      * Adds an additional logical AND condition for which to query results.
      * @type {S} The type of the joined navigation property.

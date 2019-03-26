@@ -55,6 +55,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         this._selectedProperty = "";
     }
 
+    public get getAction(): () => Promise<R> {
+        return this._getAction;
+    }
+
     public get query(): SelectQueryBuilder<T> {
         return this._query;
     }
@@ -99,14 +103,6 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         );
     }
 
-    public count(): Promise<number> {
-        this.checkQueryUsage();
-
-        const compiled = this.buildQuery(this, true);
-
-        return compiled.getCount();
-    }
-
     public endsWith(value: string, options?: QueryConditionOptions): IQuery<T, R, P> {
         return this.completeWhere(
             SqlConstants.OPERATOR_LIKE,
@@ -129,18 +125,6 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     // <any> is necessary here because the usage of this method depends on the interface from which it was called.
     public from<F extends { id: number }>(foreignEntity: { new(...params: any[]): F; }): IJoinedQuery<T, R, F> | IComparableQuery<T, R, F> | any {
         return this.joinForeignEntity(foreignEntity);
-    }
-
-    public getMany(): Promise<T[]> {
-        this.checkQueryUsage();
-
-        return this.toPromise(this._query.getMany);
-    }
-
-    public getOne(): Promise<T> {
-        this.checkQueryUsage();
-
-        return this.toPromise(this._query.getOne);
     }
 
     public greaterThan(value: number | Date): IQuery<T, R, P> {
@@ -373,15 +357,8 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.joinPropertyUsingAlias(propertySelector, this._lastAlias, this._query.leftJoin);
     }
 
-    public toPromise<TResult = R>(getAction: () => Promise<TResult> = null): Promise<TResult> {
-        const cloneBuilder = !!getAction;
-        const resultGetAction = getAction || this._getAction;
-
-        if (!resultGetAction) {
-            throw new Error(this.invalidQueryUsageMessage);
-        }
-
-        return resultGetAction.call(this.buildQuery(this, cloneBuilder));
+    public toPromise(): Promise<R> {
+        return this._getAction.call(this.buildQuery(this));
     }
 
     public usingBaseType(): IQuery<T, R, T> {
@@ -425,12 +402,6 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         this._queryMode = QueryMode.Compare;
 
         return <IComparableQuery<T, R, T>><any>this;
-    }
-
-    private get invalidQueryUsageMessage(): string {
-        return "Invalid use of IQuery."
-            + " Either call LinqRepository.get*"
-            + " or LinqRepository.query.(...).(count | get*).";
     }
 
     private addJoinCondition(whereProperty: string, condition: "AND" | "OR", targetQueryPart: IQueryBuilderPart<T> = null): void {
@@ -496,44 +467,19 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this;
     }
 
-    private buildQuery(query: IQueryInternal<T, R, any>, cloneBuilder: boolean = false): SelectQueryBuilder<T> {
+    private buildQuery(query: IQueryInternal<T, R, any>): SelectQueryBuilder<T> {
         // Unpack and apply the QueryBuilder parts.
-        const builder = this.compileQueryParts(query.queryParts, query.query, cloneBuilder);
+        this.compileQueryParts(query.queryParts, query.query);
 
-        return builder;
+        return query.query;
     }
 
-    private checkQueryUsage(): void {
-        // If a getAction was specified, that means the user called
-        // LinqRepository.get* rather than LinqRepository.query.(...).(count | get*).
-        // In that case, LinqRepository.query.(...).(count | get*) should not be used.
-        if (this._getAction) {
-            throw new Error(this.invalidQueryUsageMessage);
-        }
-    }
-
-    private compileQueryParts<PT, TBuilder = WhereExpression | SelectQueryBuilder<T>>(
-        queryParts: IQueryBuilderPart<PT>[],
-        builder: TBuilder,
-        cloneBuilder: boolean = false
-    ): TBuilder {
-        let compileBuidler = builder;
-
+    private compileQueryParts<PT>(queryParts: IQueryBuilderPart<PT>[], builder: WhereExpression): void {
         if (queryParts.length) {
-            // Clone the query builder to support reusable queries via LinqRepository's queryable property
-            // (as opposed to one-off queries using LinqRepository's count and get* methods).
-            // However, if not using a custom getAction, no need to do this
-            // (i.e. a QueryBuilder from an inner query).
-            if (cloneBuilder && builder instanceof SelectQueryBuilder) {
-                compileBuidler = builder.clone();
-            }
-
             for (const queryPart of queryParts) {
-                queryPart.queryAction.call(compileBuidler, ...queryPart.queryParams);
+                queryPart.queryAction.call(builder, ...queryPart.queryParams);
             }
         }
-
-        return compileBuidler;
     }
 
     private completeJoinedWhere(
@@ -761,9 +707,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     ): IQuery<T, R, IP> {
         const query: Query<T, R, IS> = <Query<T, R, IS>>conditions(<IQuery<T, R, P>>new Query(
             this._query,
-            // Get action is insignificant here since it will not be used in the internal Query
-            // (this Query object is used only to build query parts).
-            null,
+            this._getAction,
             this._includeAliasHistory
         ));
 
