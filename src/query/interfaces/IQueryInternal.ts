@@ -15,4 +15,8 @@ export interface IQueryInternal<T extends EntityBase, R extends T | T[], P = T> 
      * Gets the QueryParts used by the Query for the SelectQueryBuilder. Normally only used internally by the Query class for innery Queries.
      */
     queryParts: IQueryBuilderPart<T>[];
+    /**
+     * Gets the underlying database action used by the Query's SelectQueryBuilder. Normally only used internally by the Query class for innery Queries.
+     */
+    getAction(): Promise<R>;
 }

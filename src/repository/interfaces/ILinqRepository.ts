@@ -7,10 +7,6 @@ import { EntityBase } from "../../types/EntityBase";
  */
 export interface ILinqRepository<T extends EntityBase> {
     /**
-     * Returns a reusable query to support multiple get actions using the same query conditions.
-     */
-    query: IQuery<T, T | T[]>;
-    /**
      * Creates one or more entities in the database.
      * @param entities The entity or entities to create.
      */
