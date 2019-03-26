@@ -79,6 +79,11 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      */
     reset(): IQuery<T, R, T>;
     /**
+     * Count results
+     * @type {number} Number of total results
+     */
+    count(): Promise<number>;
+    /**
      * Sets the number of results to skip before taking results from the query.
      * @param skip The number of results to skip.
      */
