@@ -299,7 +299,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     }
         
     public count(): Promise<number> {
-        const targetQueryBuilder = this._query.clone()
+        const targetQueryBuilder = this._query.clone();
         this.compileQueryParts(this._queryParts, targetQueryBuilder);
 
         return targetQueryBuilder.getCount();
