@@ -38,6 +38,18 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
         this._autoGenerateId = autoGenerateId;
     }
 
+    public get query(): IQuery<T, T | T[]> {
+        const queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
+        const query: IQuery<T, T[]> = new Query(
+            queryBuilder,
+            // Get action is not known yet; user will call a get action
+            // (count, getMany, or getOne) on the returned query.
+            null
+        );
+
+        return query;
+    }
+
     public create<E extends T | T[]>(entities: E): Promise<E> {
         if (this._autoGenerateId) {
             // Set "id" to undefined in order to allow auto-generation.
@@ -76,7 +88,8 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
     public getAll(): IQuery<T, T[]> {
         const queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
         const query: IQuery<T, T[]> = new Query(
-            queryBuilder, queryBuilder.getMany
+            queryBuilder,
+            queryBuilder.getMany
         );
 
         return query;
@@ -87,7 +100,8 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
         let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder(alias);
         queryBuilder = queryBuilder.where(`${alias}.id = :id`, { id });
         const query: IQuery<T, T> = new Query(
-            queryBuilder, queryBuilder.getOne
+            queryBuilder,
+            queryBuilder.getOne
         );
 
         return query;
@@ -96,7 +110,8 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
     public getOne(): IQuery<T, T> {
         const queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
         const query: IQuery<T, T> = new Query(
-            queryBuilder, queryBuilder.getOne
+            queryBuilder,
+            queryBuilder.getOne
         );
 
         return query;

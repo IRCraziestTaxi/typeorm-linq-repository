@@ -6,6 +6,37 @@ I am very pleased to anounce lots of new functionality in version 1.0.0-alpha.11
 
 ### Latest Changes
 
+As of version 1.0.0-alpha.17, `count()` and reusable queries are supported!
+
+Previously, all queries were "one-off" queries in which you called, for instance, `_repository.getAll().(...)`. Now, however, reusable queries reminiscent of Entity Framework's `IQueryable` allow you to reuse the same query in order to, for example, count records matching a set of criteria, apply more constraints, then get results.
+
+For example:
+
+```ts
+// Previously:
+this._userRepository
+    .getAll()
+    .where(u => u.active)
+    .isTrue();
+// Query is now "dead" and not reusable.
+
+// Now:
+let activeUserQuery = this._userRepository
+    .query
+    .where(u => u.active)
+    .isTrue();
+
+// Count all active users.
+const activeUserCount = await activeUserQuery.count();
+
+// Apply constraints for paging, etc.
+activeUserQuery = activeUserQuery
+    .skip(skip)
+    .take(take);
+
+const activeUserPageResults = activeUserQuery.getMany();
+```
+
 As of version 1.0.0-alpha.14:
 
 * No need to extend your repositories from abstract class `RepositoryBase`! `RepositoryBase` has been renamed to `LinqRepository` and is no longer abstract. That means you can simply create a repository as follows:
@@ -142,8 +173,8 @@ export { RepositoryBase };
 ## Using Queries
 `typeorm-linq-repository` not only makes setting up repositories incredibly easy; it also gives you powerful, LINQ-style query syntax.
 
-### Retrieving Entities
-You can query entities for all, many, or one result:
+### Counting and Retrieving Entities
+Note: Prior to version 1.0.0-alpha.17, all queries were "one-off" queries in which you called, for instance, `_repository.getAll().(...)`. See examples below.
 
 ```typescript
  // Gets all entities.
@@ -163,6 +194,27 @@ this._userRepository
 
 // Finds one entity using its ID.
 this._userRepository.getById(id);
+```
+
+Now, however, reusable queries reminiscent of Entity Framework's `IQueryable` allow you to reuse the same query in order to, for example, count records matching a set of criteria, apply more constraints, then get results.
+
+For example:
+
+```ts
+let activeUserQuery = this._userRepository
+    .query
+    .where(u => u.active)
+    .isTrue();
+
+// Count all active users.
+const activeUserCount = await activeUserQuery.count();
+
+// Apply constraints for paging, etc.
+activeUserQuery = activeUserQuery
+    .skip(skip)
+    .take(take);
+
+const activeUserPageResults = activeUserQuery.getMany();
 ```
 
 ### Type Safe Querying
