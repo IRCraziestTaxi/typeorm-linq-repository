@@ -297,6 +297,13 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
         return this;
     }
+        
+    public count(): Promise<number> {
+        const targetQueryBuilder = this._query.clone()
+        this.compileQueryParts(this._queryParts, targetQueryBuilder);
+
+        return targetQueryBuilder.getCount();
+    }
 
     public skip(skip: number): IQuery<T, R, P> {
         if (skip > 0) {
