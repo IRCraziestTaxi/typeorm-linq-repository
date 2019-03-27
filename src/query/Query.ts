@@ -102,6 +102,13 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             options
         );
     }
+        
+    public count(): Promise<number> {
+        const targetQueryBuilder = this._query.clone();
+        this.compileQueryParts(this._queryParts, targetQueryBuilder);
+
+        return targetQueryBuilder.getCount();
+    }
 
     public endsWith(value: string, options?: QueryConditionOptions): IQuery<T, R, P> {
         return this.completeWhere(
@@ -296,13 +303,6 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         this._selectedProperty = `${alias}.${selectedProperty}`;
 
         return this;
-    }
-        
-    public count(): Promise<number> {
-        const targetQueryBuilder = this._query.clone();
-        this.compileQueryParts(this._queryParts, targetQueryBuilder);
-
-        return targetQueryBuilder.getCount();
     }
 
     public skip(skip: number): IQuery<T, R, P> {
