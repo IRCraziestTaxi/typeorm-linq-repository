@@ -20,6 +20,11 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      */
     catch(rejected: (error: any) => void | Promise<any> | IQuery<any, any>): Promise<any>;
     /**
+     * Count results
+     * @type {number} Number of total results
+     */
+    count(): Promise<number>;
+    /**
      * Joins an unrelated table using a TypeORM entity.
      * @type {F} The type of the foreign entity to join.
      * @param foreignEntity The TypeORM entity whose table to join.
