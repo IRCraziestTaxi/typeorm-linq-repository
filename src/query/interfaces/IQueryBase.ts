@@ -20,8 +20,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      */
     catch(rejected: (error: any) => void | Promise<any> | IQuery<any, any>): Promise<any>;
     /**
-     * Count results
-     * @type {number} Number of total results
+     * Gets the count of results matching the current query conditions.
      */
     count(): Promise<number>;
     /**
