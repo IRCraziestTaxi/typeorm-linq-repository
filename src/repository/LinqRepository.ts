@@ -1,4 +1,4 @@
-import { DeleteResult, getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
+import { DeleteResult, EntitySchema, getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../query/interfaces/IQuery";
 import { Query } from "../query/Query";
 import { EntityBase } from "../types/EntityBase";
@@ -19,7 +19,10 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
      * @param entityType The entity whose repository to create.
      * @param options Options for setting up the repository.
      */
-    public constructor(entityType: EntityConstructor<T>, options?: RepositoryOptions) {
+    public constructor(
+        entityType: EntityConstructor<T> | EntitySchema<T>,
+        options?: RepositoryOptions
+    ) {
         let autoGenerateId: boolean = true;
         let connectionName: string;
 

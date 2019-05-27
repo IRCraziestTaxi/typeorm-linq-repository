@@ -5,9 +5,11 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 I am very pleased to anounce lots of new functionality in version 1.0.0-alpha.11!
 
 ### Latest Changes
-As of version 1.0.0-alpha.18, `count()` is supported! See the Counting Results section below.
+As of version 1.0.0-alpha.19, TypeORM's `EntitySchema` is supported by `LinqRepository` in addition to entity class types.
 
 ### Older Changes:
+As of version 1.0.0-alpha.18, `count()` is supported! See the Counting Results section below.
+
 As of version 1.0.0-alpha.14:
 
 * No need to extend your repositories from abstract class `RepositoryBase`! `RepositoryBase` has been renamed to `LinqRepository` and is no longer abstract. That means you can simply create a repository as follows:
