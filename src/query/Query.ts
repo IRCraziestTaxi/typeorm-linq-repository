@@ -7,6 +7,7 @@ import { EntityBase } from "../types/EntityBase";
 import { JoinedEntityType } from "../types/JoinedEntityType";
 import { QueryConditionOptions } from "../types/QueryConditionOptions";
 import { QueryConditionOptionsInternal } from "../types/QueryConditionOptionsInternal";
+import { QueryOrderOptions } from "../types/QueryOrderOptions";
 import { IComparableQuery } from "./interfaces/IComparableQuery";
 import { IJoinedComparableQuery } from "./interfaces/IJoinedComparableQuery";
 import { IJoinedQuery } from "./interfaces/IJoinedQuery";
@@ -16,7 +17,6 @@ import { IQueryInternal } from "./interfaces/IQueryInternal";
 import { ISelectQuery } from "./interfaces/ISelectQuery";
 import { ISelectQueryInternal } from "./interfaces/ISelectQueryInternal";
 import { QueryBuilderPart } from "./QueryBuilderPart";
-import { QueryOrderOptions } from "../types/QueryOrderOptions";
 
 export class Query<T extends EntityBase, R extends T | T[], P = T>
     implements IQuery<T, R, P>, IJoinedQuery<T, R, P>,
@@ -490,12 +490,17 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         }
     }
 
-    private completeOrderBy(queryAction: (...params: any[]) => SelectQueryBuilder<T>, queryParams: any[], options?: QueryOrderOptions): IQuery<T, R, P>{
+    private completeOrderBy(
+        queryAction: (...params: any[]) => SelectQueryBuilder<T>,
+        queryParams: any[],
+        options?: QueryOrderOptions
+    ): IQuery<T, R, P> {
         if (options) {
             if (typeof (options.nullsFirst) === "boolean") {
-                    queryParams.push(options.nullsFirst ? "NULLS FIRST" : "NULLS LAST");
+                queryParams.push(options.nullsFirst ? "NULLS FIRST" : "NULLS LAST");
             }
         }
+
         this._queryParts.push(new QueryBuilderPart(
             queryAction,
             queryParams

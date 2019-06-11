@@ -1,6 +1,6 @@
 import { EntityBase } from "../../types/EntityBase";
-import { QueryOrderOptions } from "../../types/QueryOrderOptions";
 import { JoinedEntityType } from "../../types/JoinedEntityType";
+import { QueryOrderOptions } from "../../types/QueryOrderOptions";
 import { IComparableQuery } from "./IComparableQuery";
 import { IJoinedQuery } from "./IJoinedQuery";
 import { IQuery } from "./IQuery";
