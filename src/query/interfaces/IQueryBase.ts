@@ -1,4 +1,5 @@
 import { EntityBase } from "../../types/EntityBase";
+import { QueryOrderOptions } from "../../types/QueryOrderOptions";
 import { JoinedEntityType } from "../../types/JoinedEntityType";
 import { IComparableQuery } from "./IComparableQuery";
 import { IJoinedQuery } from "./IJoinedQuery";
@@ -71,12 +72,12 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * Orders the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
      */
-    orderBy(propertySelector: (obj: P) => any): IQuery<T, R, P>;
+    orderBy(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P>;
     /**
      * Orders the query on the specified property in descending order.
      * @param propertySelector Property selection lambda for property on which to sort.
      */
-    orderByDescending(propertySelector: (obj: P) => any): IQuery<T, R, P>;
+    orderByDescending(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P>;
     /**
      * Returns the query back to its base type while also exiting "join mode",
      * thus ending a join chain so that where conditions may be continued on the base type.
@@ -101,12 +102,12 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * Adds a subsequent ordering to the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
      */
-    thenBy(propertySelector: (obj: P) => any): IQuery<T, R, P>;
+    thenBy(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P>;
     /**
      * Adds a subsequent ordering to the query on the specified property in descending order.
      * @param propertySelector Property selection lambda for property on which to sort.
      */
-    thenByDescending(propertySelector: (obj: P) => any): IQuery<T, R, P>;
+    thenByDescending(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P>;
     /**
      * Includes a subsequent navigation property in the previously included relationship of type P.
      * @type {S} The type of the joined navigation property.

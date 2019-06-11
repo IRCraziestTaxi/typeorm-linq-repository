@@ -16,6 +16,7 @@ import { IQueryInternal } from "./interfaces/IQueryInternal";
 import { ISelectQuery } from "./interfaces/ISelectQuery";
 import { ISelectQueryInternal } from "./interfaces/ISelectQueryInternal";
 import { QueryBuilderPart } from "./QueryBuilderPart";
+import { QueryOrderOptions } from "../types/QueryOrderOptions";
 
 export class Query<T extends EntityBase, R extends T | T[], P = T>
     implements IQuery<T, R, P>, IJoinedQuery<T, R, P>,
@@ -257,26 +258,26 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.andOr(propertySelector, SqlConstants.OPERATOR_OR, this._query.orWhere);
     }
 
-    public orderBy(propertySelector: (obj: P) => any): IQuery<T, R, P> {
+    public orderBy(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P> {
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
-        this._queryParts.push(new QueryBuilderPart(
-            this._query.orderBy,
-            [orderProperty, "ASC"]
-        ));
 
-        return this;
+        return this.completeOrderBy(
+            this._query.orderBy,
+            [orderProperty, "ASC"],
+            options
+        );
     }
 
-    public orderByDescending(propertySelector: (obj: P) => any): IQuery<T, R, P> {
+    public orderByDescending(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P> {
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
-        this._queryParts.push(new QueryBuilderPart(
-            this._query.orderBy,
-            [orderProperty, "DESC"]
-        ));
 
-        return this;
+        return this.completeOrderBy(
+            this._query.orderBy,
+            [orderProperty, "DESC"],
+            options
+        );
     }
 
     public reset(): IQuery<T, R, T> {
@@ -330,26 +331,26 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             .then(resolved);
     }
 
-    public thenBy(propertySelector: (obj: P) => any): IQuery<T, R, P> {
+    public thenBy(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P> {
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
-        this._queryParts.push(new QueryBuilderPart(
-            this._query.addOrderBy,
-            [orderProperty, "ASC"]
-        ));
 
-        return this;
+        return this.completeOrderBy(
+            this._query.addOrderBy,
+            [orderProperty, "ASC"],
+            options
+        );
     }
 
-    public thenByDescending(propertySelector: (obj: P) => any): IQuery<T, R, P> {
+    public thenByDescending(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P> {
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
-        this._queryParts.push(new QueryBuilderPart(
-            this._query.addOrderBy,
-            [orderProperty, "DESC"]
-        ));
 
-        return this;
+        return this.completeOrderBy(
+            this._query.addOrderBy,
+            [orderProperty, "DESC"],
+            options
+        );
     }
 
     public thenInclude<S extends Object>(propertySelector: (obj: P) => JoinedEntityType<S>): IQuery<T, R, S> {
@@ -487,6 +488,20 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 queryPart.queryAction.call(builder, ...queryPart.queryParams);
             }
         }
+    }
+
+    private completeOrderBy(queryAction: (...params: any[]) => SelectQueryBuilder<T>, queryParams: any[], options?: QueryOrderOptions): IQuery<T, R, P>{
+        if (options) {
+            if (typeof (options.nullsFirst) === "boolean") {
+                    queryParams.push(options.nullsFirst ? "NULLS FIRST" : "NULLS LAST");
+            }
+        }
+        this._queryParts.push(new QueryBuilderPart(
+            queryAction,
+            queryParams
+        ));
+
+        return this;
     }
 
     private completeJoinedWhere(
