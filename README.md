@@ -5,9 +5,22 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 I am very pleased to anounce lots of new functionality in version 1.0.0-alpha.11!
 
 ### Latest Changes
-As of version 1.0.0-alpha.19, TypeORM's `EntitySchema` is supported by `LinqRepository` in addition to entity class types.
+As of version 1.0.0-alpha.20, `QueryOrderOptions` now let you optionally specify whether to return `NULL`s first or last in an `orderBy` method.
+
+```ts
+// Get users sorted by middle name
+// while keeping users with no middle name
+// last in the list of results.
+const users = await userRepository
+    .getAll()
+    .orderBy(u => u.middleName, { nullsFirst: false });
+```
+
+Note that there is no default value for this option; if neither `true` nor `false` is specified for `nullsFirst` (or if the options object is not supplied at all), then no specification is made to TypeORM regarding whether to place `NULL` values first or last in the list of results.
 
 ### Older Changes:
+As of version 1.0.0-alpha.19, TypeORM's `EntitySchema` is supported by `LinqRepository` in addition to entity class types.
+
 As of version 1.0.0-alpha.18, `count()` is supported! See the Counting Results section below.
 
 As of version 1.0.0-alpha.14:
