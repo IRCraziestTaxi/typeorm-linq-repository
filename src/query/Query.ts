@@ -493,7 +493,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     private completeOrderBy(queryAction: (...params: any[]) => any, queryParams: any[], options?: QueryOrderOptions): IQuery<T, R, P>{
         if (options) {
             if (typeof (options.nullsFirst) === "boolean") {
-                    queryParams.push(options.nullsFirst ? "NULLS FIRST":"NULLS LAST");
+                    queryParams.push(options.nullsFirst ? "NULLS FIRST" : "NULLS LAST");
             }
         }
         this._queryParts.push(new QueryBuilderPart(
