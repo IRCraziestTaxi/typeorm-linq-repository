@@ -130,8 +130,11 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.completeJoinedWhere(SqlConstants.OPERATOR_EQUAL, selector, options);
     }
 
-    // <any> is necessary here because the usage of this method depends on the interface from which it was called.
-    public from<F extends { id: number }>(foreignEntity: { new(...params: any[]): F; }): IJoinedQuery<T, R, F> | IComparableQuery<T, R, F> | any {
+    // <any> is necessary here because the usage of this method
+    // depends on the interface from which it was called.
+    public from<F extends { id: number }>(
+        foreignEntity: { new(...params: any[]): F; }
+    ): IJoinedQuery<T, R, F> | IComparableQuery<T, R, F> | any {
         return this.joinForeignEntity(foreignEntity);
     }
 
@@ -151,6 +154,16 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.completeJoinedWhere(SqlConstants.OPERATOR_GREATER_EQUAL, selector);
     }
 
+    public groupBy(propertySelector: (obj: P) => any): IQuery<T, R, P> {
+        const propertyName: string = nameof<P>(propertySelector);
+        const groupProperty: string = `${this._lastAlias}.${propertyName}`;
+
+        return this.completeGroupBy(
+            this._query.groupBy,
+            groupProperty
+        );
+    }
+
     public in(include: string[] | number[], options?: QueryConditionOptions): IQuery<T, R, P> {
         // If comparing strings, must escape them as strings in the query.
         this.escapeStringArray(include as string[]);
@@ -167,8 +180,13 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.includePropertyUsingAlias<S>(propertySelector, this._initialAlias);
     }
 
-    public inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P> {
-        return this.includeOrExcludeFromInnerQuery(<ISelectQueryInternal<TI, RI, PI1>>innerQuery, SqlConstants.OPERATOR_IN);
+    public inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(
+        innerQuery: ISelectQuery<TI, RI, PI1>
+    ): IQuery<T, R, P> {
+        return this.includeOrExcludeFromInnerQuery(
+            <ISelectQueryInternal<TI, RI, PI1>>innerQuery,
+            SqlConstants.OPERATOR_IN
+        );
     }
 
     public isFalse(): IQuery<T, R, P> {
@@ -178,24 +196,40 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     }
 
     public isNotNull(): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_IS, SqlConstants.OPERATOR_NOT_NULL, { quoteString: false });
+        return this.completeWhere(
+            SqlConstants.OPERATOR_IS,
+            SqlConstants.OPERATOR_NOT_NULL,
+            { quoteString: false }
+        );
     }
 
     public isNull(): IQuery<T, R, P> {
-        return this.completeWhere(SqlConstants.OPERATOR_IS, SqlConstants.OPERATOR_NULL, { quoteString: false });
+        return this.completeWhere(
+            SqlConstants.OPERATOR_IS,
+            SqlConstants.OPERATOR_NULL,
+            { quoteString: false }
+        );
     }
 
     public isolatedAnd<S extends Object>(and: (query: IQuery<T, R, P>) => IQuery<T, R, S>): IQuery<T, R, P> {
         // TODO: These types are not lining up.
-        return <IQuery<T, R, P>><any>this.isolatedConditions<T, P>(<() => IQuery<T, R, P>><any>and, this._query.andWhere);
+        return <IQuery<T, R, P>><any>this.isolatedConditions<T, P>(
+            <() => IQuery<T, R, P>><any>and,
+            this._query.andWhere
+        );
     }
 
     public isolatedOr<S extends Object>(and: (query: IQuery<T, R, P>) => IQuery<T, R, S>): IQuery<T, R, P> {
         // TODO: These types are not lining up.
-        return <IQuery<T, R, P>><any>this.isolatedConditions<T, P>(<() => IQuery<T, R, P>><any>and, this._query.orWhere);
+        return <IQuery<T, R, P>><any>this.isolatedConditions<T, P>(
+            <() => IQuery<T, R, P>><any>and,
+            this._query.orWhere
+        );
     }
 
-    public isolatedWhere<S extends Object>(where: (query: IQuery<T, R, T>) => IQuery<T, R, S>): IQuery<T, R, T> {
+    public isolatedWhere<S extends Object>(
+        where: (query: IQuery<T, R, T>) => IQuery<T, R, S>
+    ): IQuery<T, R, T> {
         // TODO: These types are not lining up.
         return this.isolatedConditions<T, S>(<() => IQuery<T, R, S>><any>where, this._query.where);
     }
@@ -206,11 +240,15 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this;
     }
 
-    public join<S extends Object>(propertySelector: (obj: T) => JoinedEntityType<S>): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
+    public join<S extends Object>(
+        propertySelector: (obj: T) => JoinedEntityType<S>
+    ): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
         return this.joinPropertyUsingAlias(propertySelector, this._initialAlias);
     }
 
-    public joinAlso<S extends Object>(propertySelector: (obj: T) => JoinedEntityType<S>): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
+    public joinAlso<S extends Object>(
+        propertySelector: (obj: T) => JoinedEntityType<S>
+    ): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
         return this.joinPropertyUsingAlias(propertySelector, this._initialAlias, this._query.leftJoin);
     }
 
@@ -230,7 +268,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.completeJoinedWhere(SqlConstants.OPERATOR_LESS_EQUAL, selector);
     }
 
-    public notEqual(value: string | number | boolean | Date, options?: QueryConditionOptions): IQuery<T, R, P> {
+    public notEqual(
+        value: string | number | boolean | Date, options?: QueryConditionOptions
+    ): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_NOT_EQUAL, value, null, options);
     }
 
@@ -250,8 +290,13 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         );
     }
 
-    public notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P> {
-        return this.includeOrExcludeFromInnerQuery(<ISelectQueryInternal<TI, RI, PI1>>innerQuery, SqlConstants.OPERATOR_NOT_IN);
+    public notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(
+        innerQuery: ISelectQuery<TI, RI, PI1>
+    ): IQuery<T, R, P> {
+        return this.includeOrExcludeFromInnerQuery(
+            <ISelectQueryInternal<TI, RI, PI1>>innerQuery,
+            SqlConstants.OPERATOR_NOT_IN
+        );
     }
 
     public or<S extends Object>(propertySelector: (obj: P) => S): IComparableQuery<T, R, P> {
@@ -269,7 +314,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         );
     }
 
-    public orderByDescending(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P> {
+    public orderByDescending(
+        propertySelector: (obj: P) => any, options?: QueryOrderOptions
+    ): IQuery<T, R, P> {
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
 
@@ -342,7 +389,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         );
     }
 
-    public thenByDescending(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P> {
+    public thenByDescending(
+        propertySelector: (obj: P) => any,
+        options?: QueryOrderOptions
+    ): IQuery<T, R, P> {
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
 
@@ -353,15 +403,31 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         );
     }
 
-    public thenInclude<S extends Object>(propertySelector: (obj: P) => JoinedEntityType<S>): IQuery<T, R, S> {
+    public thenGroupBy(propertySelector: (obj: P) => any): IQuery<T, R, P> {
+        const propertyName: string = nameof<P>(propertySelector);
+        const groupProperty: string = `${this._lastAlias}.${propertyName}`;
+
+        return this.completeGroupBy(
+            this._query.addGroupBy,
+            groupProperty
+        );
+    }
+
+    public thenInclude<S extends Object>(
+        propertySelector: (obj: P) => JoinedEntityType<S>
+    ): IQuery<T, R, S> {
         return this.includePropertyUsingAlias<S>(propertySelector, this._lastAlias);
     }
 
-    public thenJoin<S extends Object>(propertySelector: (obj: P) => JoinedEntityType<S>): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
+    public thenJoin<S extends Object>(
+        propertySelector: (obj: P) => JoinedEntityType<S>
+    ): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
         return this.joinPropertyUsingAlias(propertySelector, this._lastAlias);
     }
 
-    public thenJoinAlso<S extends Object>(propertySelector: (obj: P) => JoinedEntityType<S>): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
+    public thenJoinAlso<S extends Object>(
+        propertySelector: (obj: P) => JoinedEntityType<S>
+    ): IQuery<T, R, S> | IComparableQuery<T, R, S> | any {
         return this.joinPropertyUsingAlias(propertySelector, this._lastAlias, this._query.leftJoin);
     }
 
@@ -375,7 +441,9 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return <IQuery<T, R, T>><any>this;
     }
 
-    public where<S extends Object, F = T | P>(propertySelector: (obj: F) => S): IComparableQuery<T, R, T> | IComparableQuery<T, R, P> | any {
+    public where<S extends Object, F = T | P>(
+        propertySelector: (obj: F) => S
+    ): IComparableQuery<T, R, T> | IComparableQuery<T, R, P> | any {
         const whereProperties: string = nameof<F>(propertySelector);
         let whereProperty: string = null;
 
@@ -412,12 +480,21 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return <IComparableQuery<T, R, T>><any>this;
     }
 
-    private addJoinCondition(whereProperty: string, condition: "AND" | "OR", targetQueryPart: IQueryBuilderPart<T> = null): void {
+    private addJoinCondition(
+        whereProperty: string, condition: "AND" | "OR",
+        targetQueryPart: IQueryBuilderPart<T> = null
+    ): void {
         // Result of calling .include(x => x.prop).where(...).<compare>(...).<and/or>(...)
-        // [QueryBuilder.leftJoinAndSelect, ["alias.includedProperty", "includedProperty", "includedProperty.property = 'something'"]]
+        // [
+        //     QueryBuilder.leftJoinAndSelect,
+        //     ["alias.includedProperty", "includedProperty", "includedProperty.property = 'something'"]
+        // ]
         // OR
         // Result of calling .join(x => x.pop).where(...).<compare>(...).<and/or>(...)
-        // [QueryBuilder.innerJoin, ["alias.includedProperty", "includedProperty", "includedProperty.property = 'something'"]]
+        // [
+        //     QueryBuilder.innerJoin,
+        //     ["alias.includedProperty", "includedProperty", "includedProperty.property = 'something'"]
+        // ]
         const part: IQueryBuilderPart<T> = targetQueryPart || this._queryParts.pop();
 
         // "includedProperty.property = 'something'"
@@ -425,7 +502,8 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         joinCondition += ` ${condition} ${this._lastAlias}.${whereProperty}`;
         (<[string]>part.queryParams).push(joinCondition);
 
-        // If we did not receive the optional taretQueryPart argument, that means we used the last query part, which was popped from this._queryParts.
+        // If we did not receive the optional taretQueryPart argument,
+        // that means we used the last query part, which was popped from this._queryParts.
         if (!targetQueryPart) {
             this._queryParts.push(part);
         }
@@ -490,20 +568,32 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         }
     }
 
+    private completeGroupBy(
+        groupAction: (...params: any[]) => SelectQueryBuilder<T>,
+        groupProperty: string
+    ): IQuery<T, R, P> {
+        this._queryParts.push(new QueryBuilderPart(
+            groupAction,
+            [groupProperty]
+        ));
+
+        return this;
+    }
+
     private completeOrderBy(
-        queryAction: (...params: any[]) => SelectQueryBuilder<T>,
-        queryParams: any[],
+        orderAction: (...params: any[]) => SelectQueryBuilder<T>,
+        orderParams: [string, "ASC" | "DESC"],
         options?: QueryOrderOptions
     ): IQuery<T, R, P> {
         if (options) {
             if (typeof (options.nullsFirst) === "boolean") {
-                queryParams.push(options.nullsFirst ? "NULLS FIRST" : "NULLS LAST");
+                orderParams.push(options.nullsFirst ? "NULLS FIRST" : "NULLS LAST");
             }
         }
 
         this._queryParts.push(new QueryBuilderPart(
-            queryAction,
-            queryParams
+            orderAction,
+            orderParams
         ));
 
         return this;
@@ -625,7 +715,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
         // If processing a join condition.
         if (this._queryWhereType === QueryWhereType.Joined) {
-            // [QueryBuilder.leftJoinAndSelect, ["alias.includedProperty", "includedProperty", "includedProperty.property"]]
+            // [
+            //     QueryBuilder.leftJoinAndSelect,
+            //     ["alias.includedProperty", "includedProperty", "includedProperty.property"]
+            // ]
             const part: IQueryBuilderPart<T> = wherePart;
             // "includedProperty.property"
             let joinCondition: string = (<[string]>part.queryParams).pop();
@@ -711,12 +804,16 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         });
     }
 
-    private includeOrExcludeFromInnerQuery<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQueryInternal<TI, RI, PI1>, operator: string): IQuery<T, R, P> {
+    private includeOrExcludeFromInnerQuery<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(
+        innerQuery: ISelectQueryInternal<TI, RI, PI1>,
+        operator: string
+    ): IQuery<T, R, P> {
         innerQuery.queryParts.unshift(new QueryBuilderPart(
             innerQuery.query.select, [innerQuery.selected]
         ));
 
-        // Use <any> since all that matters is that the base type of any query contains a property named "id".
+        // Use <any> since all that matters is that the base type of any query
+        // contains a property named "id".
         const query: string = this.buildQuery(<any>innerQuery)
             .getQuery();
         this.completeWhere(operator, `(${query})`, { quoteString: false });
@@ -724,8 +821,15 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this;
     }
 
-    private includePropertyUsingAlias<S extends Object>(propertySelector: (obj: T | P) => JoinedEntityType<S>, queryAlias: string): IQuery<T, R, S> {
-        return this.joinOrIncludePropertyUsingAlias(propertySelector, queryAlias, this._query.leftJoinAndSelect);
+    private includePropertyUsingAlias<S extends Object>(
+        propertySelector: (obj: T | P) => JoinedEntityType<S>,
+        queryAlias: string
+    ): IQuery<T, R, S> {
+        return this.joinOrIncludePropertyUsingAlias(
+            propertySelector,
+            queryAlias,
+            this._query.leftJoinAndSelect
+        );
     }
 
     private isolatedConditions<IP, IS>(
@@ -770,11 +874,14 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return <IQuery<T, R, IP>><any>this;
     }
 
-    private joinForeignEntity<F extends Object>(foreignEntity: { new(...params: any[]): F; }): IQuery<T, R, F> | IComparableQuery<T, R, F> {
+    private joinForeignEntity<F extends Object>(
+        foreignEntity: { new(...params: any[]): F; }
+    ): IQuery<T, R, F> | IComparableQuery<T, R, F> {
         const entityName: string = nameof(foreignEntity);
         const resultAlias: string = entityName;
         this._lastAlias = resultAlias;
-        // If just passing through a chain of possibly already executed includes for semantics, don't execute the include again.
+        // If just passing through a chain of possibly already executed includes for semantics,
+        // don't execute the include again.
         // Only execute the include if it has not been previously executed.
         if (!(this._includeAliasHistory.find(a => a === resultAlias))) {
             this._includeAliasHistory.push(resultAlias);
@@ -838,7 +945,8 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         this.setJoinIfNotCompare();
 
         this._lastAlias = resultAlias;
-        // If just passing through a chain of possibly already executed includes for semantics, don't execute the include again.
+        // If just passing through a chain of possibly already executed includes for semantics,
+        // don't execute the include again.
         // Only execute the include if it has not been previously executed.
         if (!(this._includeAliasHistory.find(a => a === resultAlias))) {
             this._includeAliasHistory.push(resultAlias);
