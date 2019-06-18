@@ -5,6 +5,9 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 I am very pleased to anounce lots of new functionality in version 1.0.0-alpha.11!
 
 ### Latest Changes
+As of version 1.0.0-alpha.21, `groupBy` is supported! Use `thenGroupBy` to add to the initial grouping property.
+
+### Older Changes:
 As of version 1.0.0-alpha.20, `QueryOrderOptions` now let you optionally specify whether to return `NULL`s first or last in an `orderBy` method.
 
 ```ts
@@ -18,7 +21,6 @@ const users = await userRepository
 
 Note that there is no default value for this option; if neither `true` nor `false` is specified for `nullsFirst` (or if the options object is not supplied at all), then no specification is made to TypeORM regarding whether to place `NULL` values first or last in the list of results.
 
-### Older Changes:
 As of version 1.0.0-alpha.19, TypeORM's `EntitySchema` is supported by `LinqRepository` in addition to entity class types.
 
 As of version 1.0.0-alpha.18, `count()` is supported! See the Counting Results section below.
@@ -721,6 +723,16 @@ this._userRepository
     .orderByDescending(u => u.email)
     .include(u => u.posts)
     .thenByDescending(p => p.date);
+```
+
+### Grouping Results
+You can group results by one or more properties using `groupBy` and `thenGroupBy`.
+
+```ts
+this._userRepository
+    .getAll()
+    .groupBy(u => u.lastName)
+    .thenGroupBy(u => u.firstName);
 ```
 
 ### Using Query Results

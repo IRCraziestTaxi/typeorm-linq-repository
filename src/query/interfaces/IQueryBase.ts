@@ -31,6 +31,11 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      */
     from<F extends { id: number }>(foreignEntity: { new(...params: any[]): F; }): IJoinedQuery<T, R, F>;
     /**
+     * Groups entities on the specified property.
+     * @param propertySelector Property selection lambda for property by which to group.
+     */
+    groupBy(propertySelector: (obj: P) => any): IQuery<T, R, P>;
+    /**
      * Includes the specified navigation property in the queried results.
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to include, ex. x => x.prop
@@ -108,6 +113,11 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @param propertySelector Property selection lambda for property on which to sort.
      */
     thenByDescending(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P>;
+    /**
+     * Groups entities on a subsequent specified property.
+     * @param propertySelector Property selection lambda for property by which to subsequently group.
+     */
+    thenGroupBy(propertySelector: (obj: P) => any): IQuery<T, R, P>;
     /**
      * Includes a subsequent navigation property in the previously included relationship of type P.
      * @type {S} The type of the joined navigation property.
