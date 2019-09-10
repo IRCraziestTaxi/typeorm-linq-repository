@@ -25,6 +25,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     IJoinedComparableQuery<T, R, P>,
     IQueryInternal<T, R, P>,
     ISelectQueryInternal<T, R, P> {
+    private readonly _duplicateAliasHistory: string[];
     private readonly _getAction: () => Promise<R>;
     private readonly _includeAliasHistory: string[];
     private readonly _initialAlias: string;
@@ -46,13 +47,15 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         getAction: () => Promise<R>,
         includeAliasHistory: string[] = []
     ) {
+        this._duplicateAliasHistory = [];
         this._getAction = getAction;
         this._includeAliasHistory = includeAliasHistory;
         this._initialAlias = queryBuilder.alias;
-        this._lastAlias = this._initialAlias;
         this._query = queryBuilder;
-        this._queryMode = QueryMode.Get;
         this._queryParts = [];
+
+        this._lastAlias = this._initialAlias;
+        this._queryMode = QueryMode.Get;
         this._queryWhereType = QueryWhereType.Normal;
         this._selectedProperty = "";
     }
@@ -789,24 +792,28 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             if (
                 (
                     // Could either be a normal where function:
-                    this._queryWhereType === QueryWhereType.Normal && (
+                    this._queryWhereType === QueryWhereType.Normal
+                    && (
                         // tslint:disable-next-line: triple-equals
-                        part.queryAction == this._query.where ||
+                        part.queryAction == this._query.where
                         // tslint:disable-next-line: triple-equals
-                        part.queryAction == this._query.andWhere ||
+                        || part.queryAction == this._query.andWhere
                         // tslint:disable-next-line: triple-equals
-                        part.queryAction == this._query.orWhere
+                        || part.queryAction == this._query.orWhere
                     )
-                ) || (
+                )
+                || (
                     // or a join condition:
-                    this._queryWhereType === QueryWhereType.Joined && (
+                    this._queryWhereType === QueryWhereType.Joined
+                    && (
                         // tslint:disable-next-line: triple-equals
                         part.queryAction == this._query.innerJoin
                         // tslint:disable-next-line: triple-equals
                         || part.queryAction == this._query.leftJoin
                         // tslint:disable-next-line: triple-equals
                         || part.queryAction == this._query.leftJoinAndSelect
-                    ) && part.queryParams.length === 3
+                    )
+                    && part.queryParams.length === 3
                 )
             ) {
                 wherePart = part;
@@ -1037,14 +1044,6 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 property = property.substring(4);
             }
 
-            // If not checking alias history, we are performing a <and/or/where><Any/None>,
-            // so make this instance of this relation's alias unique.
-            if (!checkAliasHistory) {
-                property += Date
-                    .now()
-                    .toString();
-            }
-
             this.joinPropertyUsingAlias(property, this._lastAlias, joinAction, checkAliasHistory);
         }
 
@@ -1066,19 +1065,32 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             propertyName = propertySelector;
         }
 
-        const resultAlias: string = `${queryAlias}_${propertyName}`;
+        let resultAlias: string = `${queryAlias}_${propertyName}`;
 
         // If including, do not set join mode.
         if (queryAction !== this._query.leftJoinAndSelect) {
             this.setJoinIfNotCompare();
         }
 
+        // If not checking alias history, we are performing a <and/or/where><Any/None>,
+        // so make this instance of this relation's alias unique.
+        if (!checkAliasHistory) {
+            const existingAliasCount = this._duplicateAliasHistory
+                .filter(a => a === resultAlias)
+                .length;
+
+            this._duplicateAliasHistory.push(resultAlias);
+
+            resultAlias += existingAliasCount.toString();
+        }
+
         this._lastAlias = resultAlias;
 
         // If just passing through a chain of possibly already executed includes for semantics,
         // don't execute the include again.
-        // Only execute the include if it has not been previously executed.
-        if (checkAliasHistory && !(this._includeAliasHistory.find(a => a === resultAlias))) {
+        // Only execute the include if it has not been previously executed OR if not checking alias history,
+        // meaning we are performing an <and/or/where><Any/None>.
+        if (!checkAliasHistory || !(this._includeAliasHistory.find(a => a === resultAlias))) {
             this._includeAliasHistory.push(resultAlias);
             const queryProperty: string = `${queryAlias}.${propertyName}`;
             this._queryParts.push(new QueryBuilderPart(
@@ -1125,9 +1137,15 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             [`COUNT(${this._lastAlias}.${countProp}) ${havingCountComparer} 0`]
         ));
 
-        return conditionPropSelector
-            ? this.and(conditionPropSelector)
-            : <IQuery<T, R, T>><any>this;
+        // Create join condition if necessary.
+        if (conditionPropSelector) {
+            const conditionProp = nameof<S>(conditionPropSelector);
+            // Set QueryWhereType.Joined to enable valid use of conditional method.
+            this._queryWhereType = QueryWhereType.Joined;
+            this.createJoinCondition(conditionProp);
+        }
+
+        return <IQuery<T, R, T> | IComparableQuery<T, R, S>><any>this;
     }
 
     private setJoinIfNotCompare(): void {
