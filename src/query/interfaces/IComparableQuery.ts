@@ -1,3 +1,4 @@
+import { ComparableValue } from "../../types/ComparableValue";
 import { EntityBase } from "../../types/EntityBase";
 import { JoinedEntityType } from "../../types/JoinedEntityType";
 import { QueryConditionOptions } from "../../types/QueryConditionOptions";
@@ -33,7 +34,7 @@ export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T
      * @param value The value against which to compare.
      * @param options Options for query conditions such as string case matching.
      */
-    equal(value: string | number | boolean | Date, options?: QueryConditionOptions): IQuery<T, R, P>;
+    equal(value: ComparableValue, options?: QueryConditionOptions): IQuery<T, R, P>;
     /**
      * Joins an unrelated table using a TypeORM entity.
      * @type {F} The type of the foreign entity to join.

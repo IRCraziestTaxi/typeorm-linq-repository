@@ -3,6 +3,7 @@ import { Brackets, ObjectLiteral, SelectQueryBuilder, WhereExpression } from "ty
 import { SqlConstants } from "../constants/SqlConstants";
 import { QueryMode } from "../enums/QueryMode";
 import { QueryWhereType } from "../enums/QueryWhereType";
+import { ComparableValue } from "../types/ComparableValue";
 import { EntityBase } from "../types/EntityBase";
 import { JoinedEntityType } from "../types/JoinedEntityType";
 import { QueryConditionOptions } from "../types/QueryConditionOptions";
@@ -72,8 +73,44 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this._selectedProperty;
     }
 
-    public and<S extends Object>(propertySelector: (obj: P) => S): IComparableQuery<T, R, P> {
+    public and<S extends Object, PP = P, RR = P>(propertySelector: (obj: PP) => S): IComparableQuery<T, R, RR> {
         return this.andOr(propertySelector, SqlConstants.OPERATOR_AND, this._query.andWhere);
+    }
+
+    // TODO: Can we use something besides the VERY unfortunate "any" here?
+    // With return type "IQuery<T, R, T> | IComparableQuery<T, R, S>",
+    // TS is complaining about IComparableQuery not having a whole bunch of methods
+    // from IQuery (which is true).
+    public andAny<S extends Object>(
+        relationSelector: (obj: T) => JoinedEntityType<S>,
+        relationCountPropSelector: (obj: S) => ComparableValue,
+        conditionPropSelector?: (obj: S) => ComparableValue
+    ): any {
+        return this.relationCount(
+            relationSelector,
+            relationCountPropSelector,
+            this._query.andHaving,
+            ">",
+            conditionPropSelector
+        );
+    }
+
+    // TODO: Can we use something besides the VERY unfortunate "any" here?
+    // With return type "IQuery<T, R, T> | IComparableQuery<T, R, S>",
+    // TS is complaining about IComparableQuery not having a whole bunch of methods
+    // from IQuery (which is true).
+    public andNone<S extends Object>(
+        relationSelector: (obj: T) => JoinedEntityType<S>,
+        relationCountPropSelector: (obj: S) => ComparableValue,
+        conditionPropSelector?: (obj: S) => ComparableValue
+    ): any {
+        return this.relationCount(
+            relationSelector,
+            relationCountPropSelector,
+            this._query.andHaving,
+            "=",
+            conditionPropSelector
+        );
     }
 
     public beginsWith(value: string, options?: QueryConditionOptions): IQuery<T, R, P> {
@@ -87,7 +124,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         );
     }
 
-    public catch(rejected: (error: any) => void | Promise<any> | IQuery<any, any>): Promise<any> {
+    public async catch(rejected: (error: any) => void | Promise<any> | IQuery<any, any>): Promise<any> {
         return this.toPromise()
             .catch(rejected);
     }
@@ -122,7 +159,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         );
     }
 
-    public equal(value: string | number | boolean | Date, options?: QueryConditionOptions): IQuery<T, R, P> {
+    public equal(value: ComparableValue, options?: QueryConditionOptions): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_EQUAL, value, null, options);
     }
 
@@ -269,7 +306,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     }
 
     public notEqual(
-        value: string | number | boolean | Date, options?: QueryConditionOptions
+        value: ComparableValue, options?: QueryConditionOptions
     ): IQuery<T, R, P> {
         return this.completeWhere(SqlConstants.OPERATOR_NOT_EQUAL, value, null, options);
     }
@@ -303,6 +340,24 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.andOr(propertySelector, SqlConstants.OPERATOR_OR, this._query.orWhere);
     }
 
+    // TODO: Can we use something besides the VERY unfortunate "any" here?
+    // With return type "IQuery<T, R, T> | IComparableQuery<T, R, S>",
+    // TS is complaining about IComparableQuery not having a whole bunch of methods
+    // from IQuery (which is true).
+    public orAny<S extends Object>(
+        relationSelector: (obj: T) => JoinedEntityType<S>,
+        relationCountPropSelector: (obj: S) => ComparableValue,
+        conditionPropSelector?: (obj: S) => ComparableValue
+    ): any {
+        return this.relationCount(
+            relationSelector,
+            relationCountPropSelector,
+            this._query.orHaving,
+            ">",
+            conditionPropSelector
+        );
+    }
+
     public orderBy(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P> {
         const propertyName: string = nameof<P>(propertySelector);
         const orderProperty: string = `${this._lastAlias}.${propertyName}`;
@@ -324,6 +379,24 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             this._query.orderBy,
             [orderProperty, "DESC"],
             options
+        );
+    }
+
+    // TODO: Can we use something besides the VERY unfortunate "any" here?
+    // With return type "IQuery<T, R, T> | IComparableQuery<T, R, S>",
+    // TS is complaining about IComparableQuery not having a whole bunch of methods
+    // from IQuery (which is true).
+    public orNone<S extends Object>(
+        relationSelector: (obj: T) => JoinedEntityType<S>,
+        relationCountPropSelector: (obj: S) => ComparableValue,
+        conditionPropSelector?: (obj: S) => ComparableValue
+    ): any {
+        return this.relationCount(
+            relationSelector,
+            relationCountPropSelector,
+            this._query.orHaving,
+            "=",
+            conditionPropSelector
         );
     }
 
@@ -373,7 +446,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this;
     }
 
-    public then(resolved: (results: R) => void | Promise<any>): Promise<any> {
+    public async then(resolved: (results: R) => void | Promise<any>): Promise<any> {
         return this.toPromise()
             .then(resolved);
     }
@@ -480,6 +553,42 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return <IComparableQuery<T, R, T>><any>this;
     }
 
+    // TODO: Can we use something besides the VERY unfortunate "any" here?
+    // With return type "IQuery<T, R, T> | IComparableQuery<T, R, S>",
+    // TS is complaining about IComparableQuery not having a whole bunch of methods
+    // from IQuery (which is true).
+    public whereAny<S extends Object>(
+        relationSelector: (obj: T) => JoinedEntityType<S>,
+        relationCountPropSelector: (obj: S) => ComparableValue,
+        conditionPropSelector?: (obj: S) => ComparableValue
+    ): any {
+        return this.relationCount(
+            relationSelector,
+            relationCountPropSelector,
+            this._query.having,
+            ">",
+            conditionPropSelector
+        );
+    }
+
+    // TODO: Can we use something besides the VERY unfortunate "any" here?
+    // With return type "IQuery<T, R, T> | IComparableQuery<T, R, S>",
+    // TS is complaining about IComparableQuery not having a whole bunch of methods
+    // from IQuery (which is true).
+    public whereNone<S extends Object>(
+        relationSelector: (obj: T) => JoinedEntityType<S>,
+        relationCountPropSelector: (obj: S) => ComparableValue,
+        conditionPropSelector?: (obj: S) => ComparableValue
+    ): any {
+        return this.relationCount(
+            relationSelector,
+            relationCountPropSelector,
+            this._query.having,
+            "=",
+            conditionPropSelector
+        );
+    }
+
     private addJoinCondition(
         whereProperty: string, condition: "AND" | "OR",
         targetQueryPart: IQueryBuilderPart<T> = null
@@ -509,12 +618,12 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         }
     }
 
-    private andOr<S extends Object>(
-        propertySelector: (obj: P) => S,
+    private andOr<S extends Object, PP = P, RR = P>(
+        propertySelector: (obj: PP) => S,
         operation: "AND" | "OR",
         queryAction: (where: string, parameters?: ObjectLiteral) => SelectQueryBuilder<T>
-    ): IComparableQuery<T, R, P> {
-        const whereProperties: string = nameof<P>(propertySelector);
+    ): IComparableQuery<T, R, RR> {
+        const whereProperties: string = nameof<PP>(propertySelector);
 
         // If accessing multiple properties during an AND, join relationships using an INNER JOIN.
         // If accessing multiple properties during an OR, join relationships using a LEFT JOIN.
@@ -550,7 +659,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
         this._queryMode = QueryMode.Compare;
 
-        return this;
+        return <IComparableQuery<T, R, RR>><any>this;
     }
 
     private buildQuery(query: IQueryInternal<T, R, any>): SelectQueryBuilder<T> {
@@ -624,7 +733,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     private completeWhere(
         operator: string,
-        value: string | number | boolean | Date,
+        value: ComparableValue,
         optionsInternal?: QueryConditionOptionsInternal,
         options?: QueryConditionOptions
     ): IQuery<T, R, P> {
@@ -836,7 +945,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         conditions: (query: IQuery<T, R, P>) => IQuery<T, R, IS>,
         conditionAction: (...params: any[]) => SelectQueryBuilder<T>
     ): IQuery<T, R, IP> {
-        const query: Query<T, R, IS> = <Query<T, R, IS>>conditions(<IQuery<T, R, P>>new Query(
+        const query: Query<T, R, IS> = <Query<T, R, IS>><any>conditions(<IQuery<T, R, P>><any>new Query(
             this._query,
             this._getAction,
             this._includeAliasHistory
@@ -897,7 +1006,8 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     private joinMultipleProperties(
         whereProperties: string,
-        joinAction: (...params: any[]) => SelectQueryBuilder<T> = this._query.innerJoin
+        joinAction: (...params: any[]) => SelectQueryBuilder<T> = this._query.innerJoin,
+        checkAliasHistory: boolean = true
     ): string {
         // Array.map() is used to select a property from a relationship collection.
         // .where(x => x.relationshipOne.map(y => y.relationshipTwo.map(z => z.relationshipThree)))...
@@ -912,7 +1022,14 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
             .replace(/\)/g, "");
 
         const separatedProperties: string[] = whereProperties.split(".");
-        const whereProperty: string = separatedProperties.pop();
+
+        // If not checking alias history, we are performing a <and/or/where><Any/None>,
+        // so do not pop the last property, which is a relation rather than a primitive property.
+        let whereProperty = "";
+
+        if (checkAliasHistory) {
+            whereProperty = separatedProperties.pop();
+        }
 
         for (let property of separatedProperties) {
             // Array.map() is used to select a property from a relationship collection.
@@ -920,7 +1037,15 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                 property = property.substring(4);
             }
 
-            this.joinPropertyUsingAlias(property, this._lastAlias, joinAction);
+            // If not checking alias history, we are performing a <and/or/where><Any/None>,
+            // so make this instance of this relation's alias unique.
+            if (!checkAliasHistory) {
+                property += Date
+                    .now()
+                    .toString();
+            }
+
+            this.joinPropertyUsingAlias(property, this._lastAlias, joinAction, checkAliasHistory);
         }
 
         return whereProperty;
@@ -929,7 +1054,8 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     private joinOrIncludePropertyUsingAlias<S extends Object>(
         propertySelector: ((obj: T | P) => JoinedEntityType<S>) | string,
         queryAlias: string,
-        queryAction: (...params: any[]) => SelectQueryBuilder<T>
+        queryAction: (...params: any[]) => SelectQueryBuilder<T>,
+        checkAliasHistory: boolean = true
     ): IQuery<T, R, S> {
         let propertyName: string = null;
 
@@ -942,13 +1068,17 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
         const resultAlias: string = `${queryAlias}_${propertyName}`;
 
-        this.setJoinIfNotCompare();
+        // If including, do not set join mode.
+        if (queryAction !== this._query.leftJoinAndSelect) {
+            this.setJoinIfNotCompare();
+        }
 
         this._lastAlias = resultAlias;
+
         // If just passing through a chain of possibly already executed includes for semantics,
         // don't execute the include again.
         // Only execute the include if it has not been previously executed.
-        if (!(this._includeAliasHistory.find(a => a === resultAlias))) {
+        if (checkAliasHistory && !(this._includeAliasHistory.find(a => a === resultAlias))) {
             this._includeAliasHistory.push(resultAlias);
             const queryProperty: string = `${queryAlias}.${propertyName}`;
             this._queryParts.push(new QueryBuilderPart(
@@ -963,9 +1093,41 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     private joinPropertyUsingAlias<S extends Object>(
         propertySelector: ((obj: T | P) => JoinedEntityType<S>) | string,
         queryAlias: string,
-        queryAction: (...params: any[]) => SelectQueryBuilder<T> = this._query.innerJoin
+        queryAction: (...params: any[]) => SelectQueryBuilder<T> = this._query.innerJoin,
+        checkAliasHistory: boolean = true
     ): IQuery<T, R, S> {
-        return this.joinOrIncludePropertyUsingAlias(propertySelector, queryAlias, queryAction);
+        return this.joinOrIncludePropertyUsingAlias(propertySelector, queryAlias, queryAction, checkAliasHistory);
+    }
+
+    private relationCount<S extends Object>(
+        relationSelector: (obj: T) => JoinedEntityType<S>,
+        relationCountPropSelector: (obj: S) => ComparableValue,
+        havingQueryAction: (where: string, parameters?: ObjectLiteral) => SelectQueryBuilder<T>,
+        havingCountComparer: "=" | ">",
+        conditionPropSelector?: (obj: S) => ComparableValue
+    ): IQuery<T, R, T> | IComparableQuery<T, R, S> {
+        // When using <and/or/where><Any/None>, always start at base type.
+        this.reset();
+
+        // Note: For simplicity, always LEFT JOIN the specified relationship and perform check on that instance of LEFT JOIN.
+        // There may be potential for optimization of this in the future, but it will be tricky.
+        const relations: string = nameof<T>(relationSelector);
+        this.joinMultipleProperties(
+            relations,
+            this._query.leftJoin,
+            false
+        );
+
+        // Add arbitrary COUNT property to HAVING statement driving this check.
+        const countProp = nameof<S>(relationCountPropSelector);
+        this._queryParts.push(new QueryBuilderPart(
+            havingQueryAction,
+            [`COUNT(${this._lastAlias}.${countProp}) ${havingCountComparer} 0`]
+        ));
+
+        return conditionPropSelector
+            ? this.and(conditionPropSelector)
+            : <IQuery<T, R, T>><any>this;
     }
 
     private setJoinIfNotCompare(): void {
