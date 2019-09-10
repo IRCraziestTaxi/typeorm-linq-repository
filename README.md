@@ -5,9 +5,34 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 I am very pleased to anounce lots of new functionality in version 1.0.0-alpha.11!
 
 ### Latest Changes
-As of version 1.0.0-alpha.21, `groupBy` is supported! Use `thenGroupBy` to add to the initial grouping property.
+As of version 1.0.0-alpha.22:
+
+* Checking for existence or absence of relations in an array of relations (or existence or absense of relations that meet a certain condition) is now supported!
+
+For example:
+
+```ts
+const accessiblePosts = postRepository
+    // Get posts where...
+    .getAll()
+    // Note: Must use groupBy method to check relations.
+    .groupBy(p => p.id)
+    // ...no tags exist...
+    .whereNone(p => p.tags, t => t.id)
+    // ...or the post contains the tag being searched for.
+    .orAny(p => p.tags, t => t.id, t => t.id)
+    .equal(tagId);
+```
+
+Notice the second argument in the `whereNone` and `orAny` methods. This argument simply serves as an arbitrary primitive property to `COUNT` relationships in the `HAVING` statement(s) resulting from those methods. This was done in order to not restrict entities to have a primary key named `id`; although that restriction would have conveniently shortened the signature of the method, not all schemas may name primary keys `id`.
+
+See the Checking Relations section below.
+
+* A bug was fixed in usage of the `where` method following the `include` or `thenInclude` methods. Previously, although the interface claimed that a `where` method following an `include` method operated on the query's base type, the query actually continued using the last included property type.
 
 ### Older Changes:
+As of version 1.0.0-alpha.21, `groupBy` is supported! Use `thenGroupBy` to add to the initial grouping property.
+
 As of version 1.0.0-alpha.20, `QueryOrderOptions` now let you optionally specify whether to return `NULL`s first or last in an `orderBy` method.
 
 ```ts
@@ -514,6 +539,40 @@ Note that although non-joined string comparisons defaults to case-insensitive co
 // Perform a case-insensitive comparison rather than the default case-sensitive when comparing joined entity's properties.
 equalJoined(x => x.property, { matchCase: false });
 ```
+
+### Checking Relations
+It is possible to check for existence or absence of relations in an array of relations (or existence or absense of relations that meet a certain condition).
+
+For example:
+
+```ts
+const accessiblePosts = postRepository
+    // Get posts where...
+    .getAll()
+    // Note: Must use groupBy method to check relations.
+    .groupBy(p => p.id)
+    // ...no tags exist (meaning the post is not restricted to a certain tag)...
+    .whereNone(p => p.tags, t => t.id)
+    // ...or the post contains the tag being searched for.
+    .orAny(p => p.tags, t => t.id, t => t.id)
+    .equal(tagId);
+```
+
+NOTE: As the underlying query executes methods that check relations as `HAVING COUNT(...)`, you MUST use the `groupBy` method to group results on an arbitrary primitive property of the query's base type; for instance, the primary key.
+
+The following relation checking methods are available:
+
+`whereAny`: Checks for existence of the specified relations; optionally checks for existence of relations meeting a criteria determined by the optional `conditionPropSelector` argument in conjunction with the following comparing method.
+
+`whereNone`: Checks for absence of the specified relations; optionally checks for absence of relations meeting a criteria determined by the optional `conditionPropSelector` argument in conjunction with the following comparing method.
+
+`andAny`: The same as `whereAny` but performed as `AND COUNT(...) > 0` (supplementing the initial `HAVING COUNT(...)`).
+
+`andNone`: The same as `whereNone` but performed as `AND COUNT(...) = 0` (supplementing the initial `HAVING COUNT(...)`).
+
+`orAny`: The same as `whereAny` but performed as `OR COUNT(...) > 0` (supplementing the initial `HAVING COUNT(...)`).
+
+`orNone`: The same as `whereNone` but performed as `OR COUNT(...) = 0` (supplementing the initial `HAVING COUNT(...)`).
 
 ### Including or Excluding Results Within an Inner Query
 To utilize an inner query, use the `inSelected()` and `notInSelected()` methods. Each takes an inner `ISelectQuery`, which is obtained by calling `select()` on the inner query after its construction and simply specifies which value to select from the inner query to project to the `IN` or `NOT IN` list.
