@@ -5,7 +5,7 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 I am very pleased to anounce lots of new functionality since version 1.0.0-alpha.11!
 
 ### Latest Changes
-In version 1.0.0-alpha.23, a bug was fixed in which a call to the `where` method on a non-joined query with multiple joins in the property selector (i.e. `.where(p => p.comments.map(c => c.User.email))`) would use the wrong alias and throw an error.
+In version 1.0.0-alpha.23, a bug was fixed in which a call to the `where` method on a non-joined query with multiple joins in the property selector (i.e. `.where(p => p.comments.map(c => c.user.email))`) would use the wrong alias and throw an error.
 
 As of version 1.0.0-alpha.22:
 
