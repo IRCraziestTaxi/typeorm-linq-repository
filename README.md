@@ -2,9 +2,11 @@
 Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.
 
 ## What's New
-I am very pleased to anounce lots of new functionality in version 1.0.0-alpha.11!
+I am very pleased to anounce lots of new functionality since version 1.0.0-alpha.11!
 
 ### Latest Changes
+In version 1.0.0-alpha.23, a bug was fixed in which a call to the `where` method on a non-joined query with multiple joins in the property selector (i.e. `.where(p => p.comments.map(c => c.User.email))`) would use the wrong alias and throw an error.
+
 As of version 1.0.0-alpha.22:
 
 * Checking for existence or absence of relations in an array of relations (or existence or absense of relations that meet a certain condition) is now supported!
@@ -12,7 +14,7 @@ As of version 1.0.0-alpha.22:
 For example:
 
 ```ts
-const accessiblePosts = postRepository
+const accessiblePosts = await postRepository
     // Get posts where...
     .getAll()
     // Note: Must use groupBy method to check relations.
@@ -546,7 +548,7 @@ It is possible to check for existence or absence of relations in an array of rel
 For example:
 
 ```ts
-const accessiblePosts = postRepository
+const accessiblePosts = await postRepository
     // Get posts where...
     .getAll()
     // Note: Must use groupBy method to check relations.
