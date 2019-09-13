@@ -529,12 +529,15 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         // In the event of performing a normal where after a join-based where, use the initial alias.
         if (this._queryMode === QueryMode.Get) {
             this._queryWhereType = QueryWhereType.Normal;
-            lastAlias = this._initialAlias;
+            // Following a normal where, restore last alias to the initial alias.
+            // Last alias may be changed in joinMultipleProperties, but in case it is not,
+            // it needs to be reset to the initial alias before setting the where property.
+            lastAlias = this._lastAlias = this._initialAlias;
 
             // If accessing multiple properties, join relationships using an INNER JOIN.
             whereProperty = this.joinMultipleProperties(whereProperties);
 
-            const where: string = `${lastAlias}.${whereProperty}`;
+            const where: string = `${this._lastAlias}.${whereProperty}`;
             this._queryParts.push(new QueryBuilderPart(
                 this._query.where, [where]
             ));
