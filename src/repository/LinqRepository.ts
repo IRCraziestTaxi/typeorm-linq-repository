@@ -1,4 +1,4 @@
-import { DeleteResult, EntitySchema, getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
+import { EntitySchema, getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../query/interfaces/IQuery";
 import { Query } from "../query/Query";
 import { EntityBase } from "../types/EntityBase";
@@ -41,7 +41,11 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
         this._autoGenerateId = autoGenerateId;
     }
 
-    public create<E extends T | T[]>(entities: E): Promise<E> {
+    public get typeormRepository(): Repository<T> {
+        return this._repository;
+    }
+
+    public async create<E extends T | T[]>(entities: E): Promise<E> {
         if (this._autoGenerateId) {
             // Set "id" to undefined in order to allow auto-generation.
             if (entities instanceof Array) {
@@ -54,26 +58,22 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
             }
         }
 
-        return this.update(entities);
+        return this.upsert(entities);
     }
 
     public createQueryBuilder(alias: string): SelectQueryBuilder<T> {
         return this._repository.createQueryBuilder(alias);
     }
 
-    public delete(entities: number | string | T | T[]): Promise<boolean> {
-        let deletePromise: Promise<DeleteResult | T | T[]> = null;
-
+    public async delete(entities: number | string | T | T[]): Promise<boolean> {
         if (typeof (entities) === "number" || typeof (entities) === "string") {
-            deletePromise = this._repository.delete(entities);
+            await this._repository.delete(entities);
         }
         else {
-            deletePromise = this._repository.remove(<any>entities);
+            await this._repository.remove(<any>entities);
         }
 
-        return deletePromise.then(() => {
-            return Promise.resolve(true);
-        });
+        return true;
     }
 
     public getAll(): IQuery<T, T[]> {
@@ -105,7 +105,11 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
         return query;
     }
 
-    public update<E extends T | T[]>(entities: E): Promise<E> {
+    public async update<E extends T | T[]>(entities: E): Promise<E> {
+        return this.upsert(entities);
+    }
+
+    public async upsert<E extends T | T[]>(entities: E): Promise<E> {
         return <Promise<E>>this._repository.save(<any>entities);
     }
 }
