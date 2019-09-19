@@ -1,4 +1,4 @@
-import { SelectQueryBuilder } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../../query/interfaces/IQuery";
 import { EntityBase } from "../../types/EntityBase";
 
@@ -6,6 +6,10 @@ import { EntityBase } from "../../types/EntityBase";
  * Base repository operations for TypeORM entities.
  */
 export interface ILinqRepository<T extends EntityBase> {
+    /**
+     * The underlying TypeORM repository.
+     */
+    typeormRepository: Repository<T>;
     /**
      * Creates one or more entities in the database.
      * @param entities The entity or entities to create.
@@ -34,8 +38,14 @@ export interface ILinqRepository<T extends EntityBase> {
      */
     getOne(): IQuery<T, T>;
     /**
-     * Updates one or more entities in the database.
-     * @param entities The entity or entities to update.
+     * Upserts one or more entities in the database.
+     * Note: Now an alias for upsert.
+     * @param entities The entity or entities to upsert.
      */
     update<E extends T | T[]>(entities: E): Promise<E>;
+    /**
+     * Upserts one or more entities in the database.
+     * @param entities The entities or entities to upsert.
+     */
+    upsert<E extends T | T[]>(entities: E): Promise<E>;
 }

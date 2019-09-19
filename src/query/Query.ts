@@ -827,7 +827,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         }
 
         if (!wherePart) {
-            throw new Error("Invalid use of conditional method.");
+            throw new Error("typeorm-linq-repository: Invalid use of conditional method.");
         }
 
         this._queryParts.push(...nonWheres);
@@ -897,7 +897,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         }
 
         if (!targetQueryPart) {
-            throw new Error("Invalid use of conditional join.");
+            throw new Error("typeorm-linq-repository: Invalid use of conditional join.");
         }
 
         this._queryParts.push(...otherParts);
