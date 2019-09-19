@@ -20,7 +20,7 @@ await fooRepository
 
 which is sometimes necessary when using strict null checks, for instance when a relationship is typed as optional/nullable.
 
-* Updated other dependencies.
+* `LinqRepository` now exposes a `typeormRepository` property, which allows you to use the underlying TypeORM Repository if you need to access methods not available via the `createQueryBuilder` method. The `createQueryBuilder` method, although now redundant, was left in place to avoid breaking changes.
 
 In version 1.0.0-alpha.23, a bug was fixed in which a call to the `where` method on a non-joined query with multiple joins in the property selector (i.e. `.where(p => p.comments.map(c => c.user.email))`) would use the wrong alias and throw an error.
 
