@@ -809,12 +809,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                     // or a join condition:
                     this._queryWhereType === QueryWhereType.Joined
                     && (
-                        // tslint:disable-next-line: triple-equals
-                        part.queryAction == this._query.innerJoin
-                        // tslint:disable-next-line: triple-equals
-                        || part.queryAction == this._query.leftJoin
-                        // tslint:disable-next-line: triple-equals
-                        || part.queryAction == this._query.leftJoinAndSelect
+                        part.queryAction === this._query.innerJoin
+                        || part.queryAction === this._query.leftJoin
+                        || part.queryAction === this._query.leftJoinAndSelect
+                        || part.queryAction === this._query.innerJoinAndSelect
                     )
                     && part.queryParams.length === 3
                 )
@@ -1089,17 +1087,40 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
         this._lastAlias = resultAlias;
 
+        const aliasAlreadyIncluded = this._includeAliasHistory.some(a => a === resultAlias);
+
         // If just passing through a chain of possibly already executed includes for semantics,
         // don't execute the include again.
         // Only execute the include if it has not been previously executed OR if not checking alias history,
         // meaning we are performing an <and/or/where><Any/None>.
-        if (!checkAliasHistory || !(this._includeAliasHistory.find(a => a === resultAlias))) {
+        if (!checkAliasHistory || !aliasAlreadyIncluded) {
             this._includeAliasHistory.push(resultAlias);
             const queryProperty: string = `${queryAlias}.${propertyName}`;
             this._queryParts.push(new QueryBuilderPart(
                 queryAction,
                 [queryProperty, resultAlias]
             ));
+        }
+        // If passing through a previous include but restricting the previously included entities
+        // to a condition based on a deeper relationship, then restrict the previously used
+        // leftJoinAndSelect to an innerJoinAndSelect instead.
+        else if (
+            checkAliasHistory
+            && aliasAlreadyIncluded
+            && queryAction === this._query.innerJoin
+        ) {
+            const includeQueryPartIndex = this._queryParts.findIndex(qp =>
+                qp.queryAction === this._query.leftJoinAndSelect
+                && qp.queryParams[1] === resultAlias
+            );
+
+            if (includeQueryPartIndex >= 0) {
+                const includeQueryPart = this._queryParts[includeQueryPartIndex];
+                this._queryParts[includeQueryPartIndex] = new QueryBuilderPart(
+                    this._query.innerJoinAndSelect,
+                    includeQueryPart.queryParams
+                );
+            }
         }
 
         return <IQuery<T, R, S>><any>this;
