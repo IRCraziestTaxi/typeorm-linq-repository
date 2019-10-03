@@ -5,6 +5,10 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 typeorm-linq-repository is now out of alpha! Huge thanks to everybody who used this library and helped make it what it is today!
 
 ### Latest Changes
+As of version 1.0.1:
+
+A fix/improvement was implemented in which `include`d or `thenInclude`d relations may now be filtered by later using `join` or `thenJoin` along with a `where`. See the Filtering Included Relations section below.
+
 As of version 1.0.0:
 
 * The `update` method is now an alias for the new `upsert` method. This change was made to clarify that typeorm-linq-repository calls TypeORM's `save` method, which performs upserts on the provided entities. The `update` method was left in place to avoid breaking changes.
@@ -275,6 +279,25 @@ this._postRepository
     .equal(id)
     .where((p: Post) => p.archived)
     .isTrue();
+```
+
+### Filtering Included Relations
+To filter `include`d or `thenInclude`d relationships (which is not possible by using `.include(...).where(...)` since using `where` after `include` resets the query rather than performing a `where` on the `include`), use `join` or `thenJoin` after the `include` or `thenInclude`.
+
+```ts
+this._postRepository
+    .getAll()
+    .include(p => p.comments)
+    // We want to exclude included comments based on conditions on replies
+    // while not filtering any posts.
+    .thenInclude(c => c.replies)
+    // Therefore, use a joinAlso() here to maintain a LEFT JOIN on comments
+    .joinAlso(p => p.comments)
+    // but use a thenJoin() here to restrict comments and replies
+    // to an INNER JOIN based on conditions.
+    .thenJoin(c => c.replies)
+    .where(r => r.user.email)
+    .equal(filterEmail);
 ```
 
 ### Joined Properties in Comparisons
