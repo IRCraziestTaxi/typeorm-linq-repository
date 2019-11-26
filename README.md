@@ -5,6 +5,18 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 typeorm-linq-repository is now out of alpha! Huge thanks to everybody who used this library and helped make it what it is today!
 
 ### Latest Changes
+As of version 1.1.0:
+
+A fix was implemented in which entities not implementing a property named `id` were not compatible with `LinqRepository`. To mitigate this, `id` was removed from the base `EntityBase` type. In addition:
+
+* `RepositoryOptions` now allows you to specify the name of the entity's primary key in case it is not `id` so that `create` may still be used with the option `autoGenerateId` enabled and `getById` may be used. To do so:
+
+```ts
+new LinqRepository(Entity, {
+    primaryKey: e => e.entityId
+});
+```
+
 As of version 1.0.1:
 
 A fix/improvement was implemented in which `include`d or `thenInclude`d relations may now be filtered by later using `join` or `thenJoin` along with a `where`. See the Filtering Included Relations section below.
@@ -114,8 +126,22 @@ To modify default behavior when setting up a repository, use `RepositoryOptions`
 
 Repository options include:
 
-`autoGenerateId`: A boolean value indicating whether the entity implements a property named `id` that is auto-generated. Default is `true`.
+`autoGenerateId`: A boolean value indicating whether the entity implements a primary key that is auto-generated. Default is `true`.
 `connectionName`: The name of the TypeORM database connection to use to create the repository.
+`primaryKey`: A lambda function providing the entity's primary key property if it is not named `id`.
+
+```ts
+new LinqRepository(Entity, {
+    // This entity has a primary key that is not auto-generated.
+    autoGenerateId: false,
+    // Get the repository from a specific connection rather than the default connection.
+    connectionName: "connection-name",
+    // This entity has a primary key whose name is not "id".
+    primaryKey: e => e.entityId
+});
+```
+
+Or as a repository extending `LinqRepository` (now aliased by the previously abstract `RepositoryBase`):
 
 ```ts
 import { RepositoryBase } from "typeorm-linq-repository";
@@ -125,10 +151,12 @@ import { IEntityRepository } from "./interfaces/IEntityRepository";
 export class EntityRepository extends RepositoryBase<Entity> implements IEntityRepository {
     public constructor() {
         super(Entity, {
-            // This entity has a property named "id" that is not an auto-generated primary key.
+            // This entity has a primary key that is not auto-generated.
             autoGenerateId: false,
-            // Get the repository from a specific connection.
-            connectionName: "connection-name"
+            // Get the repository from a specific connection rather than the default connection.
+            connectionName: "connection-name",
+            // This entity has a primary key whose name is not "id".
+            primaryKey: e => e.entityId
         });
     }
 }

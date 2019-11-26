@@ -1,3 +1,4 @@
+import { nameof } from "ts-simple-nameof";
 import { EntitySchema, getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../query/interfaces/IQuery";
 import { Query } from "../query/Query";
@@ -13,25 +14,33 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
     protected readonly _repository: Repository<T>;
 
     private readonly _autoGenerateId: boolean;
+    private readonly _primaryKeyName: string;
 
     /**
-     * Constructs the repository for the specified entity with, unless otherwise specified, a property named "id" that is auto-generated.
+     * Constructs the repository for the specified entity with, unless otherwise specified,
+     * a primry key named "id" that is auto-generated.
      * @param entityType The entity whose repository to create.
      * @param options Options for setting up the repository.
      */
     public constructor(
         entityType: EntityConstructor<T> | EntitySchema<T>,
-        options?: RepositoryOptions
+        options?: RepositoryOptions<T>
     ) {
         let autoGenerateId: boolean = true;
         let connectionName: string;
+        let primaryKeyName: string = "id";
 
         if (options) {
             if (typeof (options.autoGenerateId) === "boolean") {
                 autoGenerateId = options.autoGenerateId;
             }
+
             if (options.connectionName) {
                 connectionName = options.connectionName;
+            }
+
+            if (options.primaryKey) {
+                primaryKeyName = nameof(options.primaryKey);
             }
         }
 
@@ -39,6 +48,7 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
             .get(connectionName)
             .getRepository<T>(entityType);
         this._autoGenerateId = autoGenerateId;
+        this._primaryKeyName = primaryKeyName;
     }
 
     public get typeormRepository(): Repository<T> {
@@ -50,11 +60,21 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
             // Set "id" to undefined in order to allow auto-generation.
             if (entities instanceof Array) {
                 for (const entity of (<T[]>entities)) {
-                    entity.id = undefined;
+                    // Not sure what is going on with this...
+                    // Even defining EntityBase as { [key: string]: any; }
+                    // or even Record<string, any> results in the error
+                    // "Type 'string' cannot be used to index type T".
+                    // https://github.com/microsoft/TypeScript/issues/31661
+                    (<Record<string, any>>entity)[this._primaryKeyName] = undefined;
                 }
             }
             else {
-                (<T>entities).id = undefined;
+                // Not sure what is going on with this...
+                // Even defining EntityBase as { [key: string]: any; }
+                // or even Record<string, any> results in the error
+                // "Type 'string' cannot be used to index type T".
+                // https://github.com/microsoft/TypeScript/issues/31661
+                (<Record<string, any>>entities)[this._primaryKeyName] = undefined;
             }
         }
 
@@ -88,9 +108,10 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
     public getById(id: number | string): IQuery<T, T> {
         const alias: string = "entity";
         let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder(alias);
-        queryBuilder = queryBuilder.where(`${alias}.id = :id`, { id });
+        queryBuilder = queryBuilder.where(`${alias}.${this._primaryKeyName} = :id`, { id });
         const query: IQuery<T, T> = new Query(
-            queryBuilder, queryBuilder.getOne
+            queryBuilder,
+            queryBuilder.getOne
         );
 
         return query;
@@ -99,7 +120,8 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
     public getOne(): IQuery<T, T> {
         const queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
         const query: IQuery<T, T> = new Query(
-            queryBuilder, queryBuilder.getOne
+            queryBuilder,
+            queryBuilder.getOne
         );
 
         return query;
