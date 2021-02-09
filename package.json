@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/node": "14.0.9",
     "tslint": "6.1.2",
-    "typeorm": "0.2.25",
+    "typeorm": "0.2.31",
     "typescript": "3.9.3"
   },
   "peerDependencies": {
