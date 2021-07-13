@@ -5,6 +5,10 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 typeorm-linq-repository is now out of alpha! Huge thanks to everybody who used this library and helped make it what it is today!
 
 ### Latest Changes
+As of version 1.1.2:
+
+A fix was implemented to make `from`, `inSelected`, and `notInSelected` compatible with entities that do not contain a property named `id` that is a `number`.
+
 As of version 1.1.0:
 
 A fix was implemented in which entities not implementing a property named `id` were not compatible with `LinqRepository`. To mitigate this, `id` was removed from the base `EntityBase` type. In addition:

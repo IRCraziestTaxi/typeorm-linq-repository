@@ -40,7 +40,7 @@ export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T
      * @type {F} The type of the foreign entity to join.
      * @param foreignEntity The TypeORM entity whose table to join.
      */
-    from<F extends { id: number }>(foreignEntity: { new(...params: any[]): F; }): IJoinedComparableQuery<T, R, F>;
+    from<F extends EntityBase>(foreignEntity: { new(...params: any[]): F; }): IJoinedComparableQuery<T, R, F>;
     /**
      * Determines whether the previously selected property is greater than the specified value.
      * @param value The value against which to compare.
@@ -64,7 +64,7 @@ export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T
      * @type {PI1} The type of the last joined navigation property from the inner Query.
      * @param innerQuery The inner query from which to select the specified value.
      */
-    inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P>;
+    inSelected<TI extends EntityBase, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P>;
     /**
      * Determines whether the previously selected property is false.
      * @param value The value to check for falsity.
@@ -118,5 +118,5 @@ export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T
      * @type {PI1} The type of the last joined navigation property from the inner Query.
      * @param innerQuery The inner query from which to select the specified property.
      */
-    notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P>;
+    notInSelected<TI extends EntityBase, RI extends TI | TI[], PI1 = TI>(innerQuery: ISelectQuery<TI, RI, PI1>): IQuery<T, R, P>;
 }

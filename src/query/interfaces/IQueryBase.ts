@@ -29,7 +29,7 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
      * @type {F} The type of the foreign entity to join.
      * @param foreignEntity The TypeORM entity whose table to join.
      */
-    from<F extends { id: number }>(foreignEntity: { new(...params: any[]): F; }): IJoinedQuery<T, R, F>;
+    from<F extends EntityBase>(foreignEntity: { new(...params: any[]): F; }): IJoinedQuery<T, R, F>;
     /**
      * Groups entities on the specified property.
      * @param propertySelector Property selection lambda for property by which to group.
