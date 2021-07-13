@@ -172,7 +172,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     // <any> is necessary here because the usage of this method
     // depends on the interface from which it was called.
-    public from<F extends { id: number }>(
+    public from<F extends EntityBase>(
         foreignEntity: { new(...params: any[]): F; }
     ): IJoinedQuery<T, R, F> | IComparableQuery<T, R, F> | any {
         return this.joinForeignEntity(foreignEntity);
@@ -220,7 +220,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return this.includePropertyUsingAlias<S>(propertySelector, this._initialAlias);
     }
 
-    public inSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(
+    public inSelected<TI extends EntityBase, RI extends TI | TI[], PI1 = TI>(
         innerQuery: ISelectQuery<TI, RI, PI1>
     ): IQuery<T, R, P> {
         return this.includeOrExcludeFromInnerQuery(
@@ -330,7 +330,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         );
     }
 
-    public notInSelected<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(
+    public notInSelected<TI extends EntityBase, RI extends TI | TI[], PI1 = TI>(
         innerQuery: ISelectQuery<TI, RI, PI1>
     ): IQuery<T, R, P> {
         return this.includeOrExcludeFromInnerQuery(
@@ -921,7 +921,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         });
     }
 
-    private includeOrExcludeFromInnerQuery<TI extends { id: number }, RI extends TI | TI[], PI1 = TI>(
+    private includeOrExcludeFromInnerQuery<TI extends EntityBase, RI extends TI | TI[], PI1 = TI>(
         innerQuery: ISelectQueryInternal<TI, RI, PI1>,
         operator: string
     ): IQuery<T, R, P> {
