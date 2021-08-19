@@ -1,0 +1,8 @@
+{
+    "spec_dir": "test/scenarios",
+    "spec_files": [
+        "./**/*.spec.ts"
+    ],
+    "stopSpecOnExpectationFailure": false,
+    "random": false
+}
