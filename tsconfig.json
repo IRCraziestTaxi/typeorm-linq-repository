@@ -8,13 +8,6 @@
         "noImplicitAny": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "rootDir": ".",
-        "skipLibCheck": true
-    },
-    "exclude": [
-        "node_modules"
-    ],
-    "include": [
-        "./index.ts"
-    ]
+        "rootDir": "."
+    }
 }

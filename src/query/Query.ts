@@ -1025,8 +1025,14 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         // "relationshipOne.map(y=>y.relationshipTwo.map(z=>z.relationshipThree))"
         whereProperties = whereProperties.replace(/ /g, "");
         // "relationshipOne.relationshipTwo.relationshipThree"
+        // Regex allows:
+        // .map(y=>y.relationshipTwo)
+        // or:
+        // .map((y)=>y.relationshipTwo)
+        // or:
+        // .map((y:Entity)=>y.relationshipTwo)
         whereProperties = whereProperties
-            .replace(/\.map\(([a-zA-Z0-9_]+)=>[a-zA-Z0-9]+/g, "")
+            .replace(/\.map\((\(?[a-zA-Z0-9_:]+\)?)=>[a-zA-Z0-9]+/g, "")
             .replace(/\)/g, "");
 
         const separatedProperties: string[] = whereProperties.split(".");

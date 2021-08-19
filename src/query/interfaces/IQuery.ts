@@ -46,7 +46,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
-     * @param conditionPropSelector Property on which to compare
+     * @param conditionPropSelector Property on which to compare.
      */
     andNone<S extends Object>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
@@ -73,7 +73,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
-     * @param conditionPropSelector Property on which to compare
+     * @param conditionPropSelector Property on which to compare.
      */
     orAny<S extends Object>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
@@ -128,7 +128,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
-     * @param conditionPropSelector Property on which to compare
+     * @param conditionPropSelector Property on which to compare.
      */
     whereAny<S extends Object>(
         relationSelector: (obj: T) => JoinedEntityType<S>,

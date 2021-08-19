@@ -5,6 +5,22 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 typeorm-linq-repository is now out of alpha! Huge thanks to everybody who used this library and helped make it what it is today!
 
 ### Latest Changes
+As of version 1.1.3:
+
+A fix was implemented so that if a `where` with mapped properties was called that was not in the following format (without parentheses):
+
+```ts
+.where(e => e.relationshipOne.map(r => r.relationshipTwo))
+```
+
+an error would occur.
+
+Now, the following is allowed (with parentheses):
+
+```ts
+.where((e) => e.relationshipOne.map((r) => r.relationshipTwo))
+```
+
 As of version 1.1.2:
 
 A fix was implemented to make `from`, `inSelected`, and `notInSelected` compatible with entities that do not contain a property named `id` that is a `number`.
@@ -70,7 +86,7 @@ See the Checking Relations section below.
 * A bug was fixed in usage of the `where` method following the `include` or `thenInclude` methods. Previously, although the interface claimed that a `where` method following an `include` method operated on the query's base type, the query actually continued using the last included property type.
 
 ## Foreword
-This is a work in progress. This project is currently in alpha and should be treated as such. That being said, it is finally receiving a massive update after six months of inactivity, so I hope it will continue to see lots of use and continue to mature.
+This is a work in progress. This project has just recently come out of alpha and should be treated as such. That being said, it has received some massive updates for a wide range of query complexity and is periodically being updated for bug fixes, so I hope it will continue to see lots of use and continue to mature.
 
 `typeorm-linq-repository`'s queries handle simple includes, joins, and join conditions very well and now has the capability to take on more complex queries. The only way it will continue to mature is to have its limits tested see some issues and pull requests come in.
 
@@ -882,4 +898,4 @@ initializeTransactionalContext();
 patchTypeORMRepositoryWithBaseRepository();
 ```
 
-That's it! Now all you need to do is use `typeorm-transactional-cls-hooked`'s `@Transactional()` decorator on methods that persist entities to your repositories. See `typeorm-transactional-cls-hooked`'s for more details.
+That's it! Now all you need to do is use `typeorm-transactional-cls-hooked`'s `@Transactional()` decorator on methods that persist entities to your repositories. See `typeorm-transactional-cls-hooked`'s docs for more details.
