@@ -164,11 +164,10 @@ new LinqRepository(Entity, {
 Or as a repository extending `LinqRepository` (now aliased by the previously abstract `RepositoryBase`):
 
 ```ts
-import { RepositoryBase } from "typeorm-linq-repository";
+import { LinqRepository } from "typeorm-linq-repository";
 import { Entity } from "../entities/Entity";
-import { IEntityRepository } from "./interfaces/IEntityRepository";
 
-export class EntityRepository extends RepositoryBase<Entity> implements IEntityRepository {
+export class EntityRepository extends LinqRepository<Entity> {
     public constructor() {
         super(Entity, {
             // This entity has a primary key that is not auto-generated.
@@ -182,19 +181,46 @@ export class EntityRepository extends RepositoryBase<Entity> implements IEntityR
 }
 ```
 
-### Injecting RepositoryBase
-Protip: You can easily make `RepositoryBase` injectable! For example, using InversifyJS:
+### Injecting LinqRepository
+Protip: You can easily make `LinqRepository` injectable! For example, using InversifyJS:
 
 ```ts
 import { decorate, injectable, unmanaged } from "inversify";
-import { RepositoryBase } from "typeorm-linq-repository";
+import { LinqRepository } from "typeorm-linq-repository";
 
-decorate(injectable(), RepositoryBase);
-decorate(unmanaged(), RepositoryBase, 0);
-decorate(unmanaged(), RepositoryBase, 1);
+decorate(injectable(), LinqRepository);
+decorate(unmanaged(), LinqRepository, 0);
+decorate(unmanaged(), LinqRepository, 1);
 
-export { RepositoryBase };
+export { LinqRepository };
 ```
+
+### Injecting LinqRepository with NestJS
+When creating injectable repositories extending `LinqRepository` in NestJS, you must use `@nestjs/typeorm`'s `InjectConnection` decorator to inject a connection into your repository's constructor. Doing so forces Nest to wait until the TypeORM connection is established before continuing to construct the repository. If you do not use `InjectConnection`, you will encounter errors because `LinqRepository` will try to get the entity's repository from the connection before it is established.
+
+Here is an example of an injectable repository in NestJS:
+
+```ts
+import { Injectable } from "@nestjs/common";
+import { InjectConnection } from "@nestjs/typeorm";
+import { Connection } from "typeorm";
+import { LinqRepository } from "typeorm-linq-repository";
+import { Entity } from "./entity.entity";
+
+@Injectable()
+export class EntityRepository extends LinqRepository<Entity> {
+    // NOTE: @InjectConnection is required to force Nest to wait for the TypeORM connection to be established
+    // before typeorm-linq-repository's LinqRepository attempts to get the repository from the connection.
+    public constructor(
+        @InjectConnection(/* "connection-name" or empty for "default" */)
+        connection: Connection
+    ) {
+        super(Entity, { connectionName: connection.name });
+    }
+}
+```
+
+You can see a working example of injecting repositories extending `LinqRepository` in NestJS [in this repository](https://github.com/IRCraziestTaxi/responsekit-nestjs-demo).
 
 ## Using Queries
 `typeorm-linq-repository` not only makes setting up repositories incredibly easy; it also gives you powerful, LINQ-style query syntax.
