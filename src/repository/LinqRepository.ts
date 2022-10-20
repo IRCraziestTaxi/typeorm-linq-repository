@@ -1,5 +1,5 @@
 import { nameof } from "ts-simple-nameof";
-import { EntitySchema, getConnectionManager, Repository, SelectQueryBuilder } from "typeorm";
+import { DataSource, EntitySchema, Repository, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../query/interfaces/IQuery";
 import { Query } from "../query/Query";
 import { EntityBase } from "../types/EntityBase";
@@ -23,11 +23,11 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
      * @param options Options for setting up the repository.
      */
     public constructor(
+        dataSource: DataSource,
         entityType: EntityConstructor<T> | EntitySchema<T>,
         options?: RepositoryOptions<T>
     ) {
         let autoGenerateId: boolean = true;
-        let connectionName: string;
         let primaryKeyName: string = "id";
 
         if (options) {
@@ -35,18 +35,12 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
                 autoGenerateId = options.autoGenerateId;
             }
 
-            if (options.connectionName) {
-                connectionName = options.connectionName;
-            }
-
             if (options.primaryKey) {
                 primaryKeyName = nameof(options.primaryKey);
             }
         }
 
-        this._repository = getConnectionManager()
-            .get(connectionName)
-            .getRepository<T>(entityType);
+        this._repository = dataSource.getRepository<T>(entityType);
         this._autoGenerateId = autoGenerateId;
         this._primaryKeyName = primaryKeyName;
     }

@@ -10,10 +10,6 @@ export interface RepositoryOptions<T extends EntityBase> {
      */
     autoGenerateId?: boolean;
     /**
-     * The name of the database connection to use to create the repository.
-     */
-    connectionName?: string;
-    /**
      * The entity's primary key property in lambda form (e.g. "e => e.entityId");
      * if omitted, the default primary key property name is "id".
      */

@@ -5,6 +5,11 @@ Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queri
 typeorm-linq-repository is now out of alpha! Huge thanks to everybody who used this library and helped make it what it is today!
 
 ### Latest Changes
+As of version 2.0.0:
+
+Due to [breaking changes in TypeORM](https://github.com/typeorm/typeorm/issues/7428), namely the removal of `getConnectionManager`, the constructor for `LinqRepository` now requires the TypeORM `DataSource` in addition to the entity model. Likewise, since individually managed `DataSource` objects replace the `ConnectionManager` paradigm, `RepositoryOptions` now no longer contains the `connectionName` property.
+
+### Older Changes
 As of version 1.1.3:
 
 A fix was implemented so that if a `where` with mapped properties was called that was not in the following format (without parentheses):
@@ -105,40 +110,14 @@ npm install --save typeorm typeorm-linq-repository
 ## Linq Repository
 `LinqRepository` is the repository that is constructed to interact with the table represented by the entity used as the type argument for the repository.
 
-`LinqRepository` takes a class type representing a TypeORM model as its constructor argument.
+`LinqRepository` takes the TypeORM `DataSource` containing the connection to the entity's datbase and a class type representing a TypeORM model as its constructor argument.
 
 ```ts
 import { LinqRepository } from "typeorm-linq-repository";
+import { dataSource } from "path-to-initialized-data-source";
 import { User } from "../../entities/User";
 
-const userRepository: LinqRepository<User> = new LinqRepository(User);
-```
-
-## Base Repository
-`RepositoryBase` is now an alias for the renamed `LinqRepository` for backwards compability. Previously, you had to extend a repository class from the abstract `RepositoryBase` in order to construct your repository.
-
-For example:
-
-`IUserRepository.ts`
-```ts
-import { IRepositoryBase } from "typeorm-linq-repository";
-import { User } from "../../entities/User";
-
-export interface IUserRepository extends IRepositoryBase<User> {
-}
-```
-
-`UserRepository.ts`
-```ts
-import { RepositoryBase } from "typeorm-linq-repository";
-import { User } from "../entities/User";
-import { IUserRepository } from "./interfaces/IUserRepository";
-
-export class UserRepository extends RepositoryBase<User> implements IUserRepository {
-    public constructor() {
-        super(User);
-    }
-}
+const userRepository: LinqRepository<User> = new LinqRepository(dataSource, User);
 ```
 
 ### Repository Options
@@ -146,34 +125,30 @@ To modify default behavior when setting up a repository, use `RepositoryOptions`
 
 Repository options include:
 
-`autoGenerateId`: A boolean value indicating whether the entity implements a primary key that is auto-generated. Default is `true`.
-`connectionName`: The name of the TypeORM database connection to use to create the repository.
-`primaryKey`: A lambda function providing the entity's primary key property if it is not named `id`.
+- `autoGenerateId`: A boolean value indicating whether the entity implements a primary key that is auto-generated. Default is `true`.
+- `primaryKey`: A lambda function providing the entity's primary key property if it is not named `id`.
 
 ```ts
-new LinqRepository(Entity, {
+new LinqRepository(dataSource, Entity, {
     // This entity has a primary key that is not auto-generated.
     autoGenerateId: false,
-    // Get the repository from a specific connection rather than the default connection.
-    connectionName: "connection-name",
     // This entity has a primary key whose name is not "id".
     primaryKey: e => e.entityId
 });
 ```
 
-Or as a repository extending `LinqRepository` (now aliased by the previously abstract `RepositoryBase`):
+Or as a repository extending `LinqRepository`:
 
 ```ts
+import { DataSource } from "typeorm";
 import { LinqRepository } from "typeorm-linq-repository";
 import { Entity } from "../entities/Entity";
 
 export class EntityRepository extends LinqRepository<Entity> {
-    public constructor() {
-        super(Entity, {
+    public constructor(dataSource: DataSource) {
+        super(dataSource, Entity, {
             // This entity has a primary key that is not auto-generated.
             autoGenerateId: false,
-            // Get the repository from a specific connection rather than the default connection.
-            connectionName: "connection-name",
             // This entity has a primary key whose name is not "id".
             primaryKey: e => e.entityId
         });
@@ -196,26 +171,26 @@ export { LinqRepository };
 ```
 
 ### Injecting LinqRepository with NestJS
-When creating injectable repositories extending `LinqRepository` in NestJS, you must use `@nestjs/typeorm`'s `InjectConnection` decorator to inject a connection into your repository's constructor. Doing so forces Nest to wait until the TypeORM connection is established before continuing to construct the repository. If you do not use `InjectConnection`, you will encounter errors because `LinqRepository` will try to get the entity's repository from the connection before it is established.
+When creating injectable repositories extending `LinqRepository` in NestJS, you must use `@nestjs/typeorm`'s `InjectDataSource` decorator to inject a data source into your repository's constructor. Doing so forces Nest to wait until the TypeORM connection is established before continuing to construct the repository. If you do not use `InjectDataSource`, you will encounter errors because `LinqRepository` will try to get the entity's repository from the connection before it is established.
 
 Here is an example of an injectable repository in NestJS:
 
 ```ts
 import { Injectable } from "@nestjs/common";
-import { InjectConnection } from "@nestjs/typeorm";
-import { Connection } from "typeorm";
+import { InjectDataSource } from "@nestjs/typeorm";
+import { DataSource } from "typeorm";
 import { LinqRepository } from "typeorm-linq-repository";
 import { Entity } from "./entity.entity";
 
 @Injectable()
 export class EntityRepository extends LinqRepository<Entity> {
-    // NOTE: @InjectConnection is required to force Nest to wait for the TypeORM connection to be established
+    // NOTE: @InjectDataSource is required to force Nest to wait for the TypeORM connection to be established
     // before typeorm-linq-repository's LinqRepository attempts to get the repository from the connection.
     public constructor(
-        @InjectConnection(/* "connection-name" or empty for "default" */)
-        connection: Connection
+        @InjectDataSource(/* "data-source-name" or empty for "default" */)
+        dataSource: DataSource
     ) {
-        super(Entity, { connectionName: connection.name });
+        super(dataSource, Entity);
     }
 }
 ```

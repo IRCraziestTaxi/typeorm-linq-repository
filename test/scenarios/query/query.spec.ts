@@ -1,21 +1,21 @@
-import { Connection } from "typeorm";
+import { DataSource } from "typeorm";
+import { getTypeormDataSource } from "../../../.typeorm/connection/get-typeorm-data-source.function";
 import { LinqRepository } from "../../../src/repository/LinqRepository";
-import { getTypeormConnection } from "../../connection/get-typeorm-connection.function";
 import { Artist } from "../../entities/artist.entity";
 import { Song } from "../../entities/song.entity";
 import { UserProfileAttribute } from "../../entities/user-profile-attribute.entity";
 
 describe("Query", () => {
-    let connection: Connection;
+    let dataSource: DataSource;
 
     let artistRepository: LinqRepository<Artist>;
     let songRepository: LinqRepository<Song>;
 
     beforeAll(async () => {
-        connection = await getTypeormConnection();
+        dataSource = await getTypeormDataSource();
 
-        artistRepository = new LinqRepository(Artist);
-        songRepository = new LinqRepository(Song);
+        artistRepository = new LinqRepository(dataSource, Artist);
+        songRepository = new LinqRepository(dataSource, Song);
     });
 
     it("gets all entities", async () => {
@@ -222,6 +222,6 @@ describe("Query", () => {
     });
 
     afterAll(async () => {
-        await connection.close();
+        await dataSource.destroy();
     });
 });

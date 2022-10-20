@@ -1,5 +1,7 @@
 **/node_modules/**
 **/*.log
 **/*.js
+!jasmine-ts.helper.js
 **/*.d.ts
-ormconfig.env
+ormconfig.json
+.DS_Store
