@@ -8,10 +8,8 @@
             "type": "node",
             "request": "launch",
             "name": "Debug Spec",
-            "program": "${workspaceFolder}/node_modules/jasmine-ts/lib/index.js",
+            "program": "${workspaceFolder}/node_modules/.bin/jasmine",
             "args": [
-                "./test/**/*.spec.ts",
-                "--project=./tsconfig.spec.json",
                 "--config=./test/jasmine.json"
             ]
         }

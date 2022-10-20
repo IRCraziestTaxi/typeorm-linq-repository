@@ -1,0 +1,11 @@
+{
+    "database": "typeorm-linq-repository-test",
+    "host": "localhost",
+    "migrations": [
+        ".typeorm/migrations/*.ts"
+    ],
+    "password": "root",
+    "port": 3306,
+    "type": "mysql",
+    "username": "root"
+}

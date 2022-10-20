@@ -1,4 +1,4 @@
-import { getTypeormConnection } from "../../../test/connection/get-typeorm-connection.function";
+import { getTypeormDataSource } from "../../connection/get-typeorm-data-source.function";
 import { seedArtists } from "./seed-artists.function";
 import { seedGenres } from "./seed-genres.function";
 import { seedSongs } from "./seed-songs.function";
@@ -8,7 +8,7 @@ import { seedUsers } from "./seed-users.function";
 export async function main(): Promise<void> {
     console.log("Creating connection.");
 
-    const connection = await getTypeormConnection();
+    const dataSource = await getTypeormDataSource();
 
     await seedGenres();
     await seedArtists();
@@ -18,5 +18,5 @@ export async function main(): Promise<void> {
 
     console.log("Closing connection.");
 
-    await connection.close();
+    await dataSource.destroy();
 }
