@@ -2,7 +2,9 @@
 Wraps TypeORM repository pattern and QueryBuilder using fluent, LINQ-style queries.
 
 ## What's New
-typeorm-linq-repository is now out of alpha! Huge thanks to everybody who used this library and helped make it what it is today!
+Two new libraries, [typeorm-linq-repository-testing](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing) and [typeorm-linq-repository-testing-nestjs](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing-nestjs), now make it easier to unit test `LinqRepository`.
+
+[typeorm-linq-repository-testing-nestjs](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing-nestjs) contains a more "complete" example of usage since it has more practical usage in the context of another framework, but [typeorm-linq-repository-testing](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing) provides the raw components if you need to build something similar for another framework.
 
 ### Latest Changes
 As of version 2.0.0:
@@ -900,3 +902,8 @@ patchTypeORMRepositoryWithBaseRepository();
 ```
 
 That's it! Now all you need to do is use `typeorm-transactional-cls-hooked`'s `@Transactional()` decorator on methods that persist entities to your repositories. See `typeorm-transactional-cls-hooked`'s docs for more details.
+
+### Unit testing
+Two libraries, [typeorm-linq-repository-testing](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing) and [typeorm-linq-repository-testing-nestjs](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing-nestjs), now make it easier to unit test `LinqRepository`.
+
+[typeorm-linq-repository-testing-nestjs](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing-nestjs) contains a more "complete" example of usage since it has more practical usage in the context of another framework, but [typeorm-linq-repository-testing](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing) provides the raw components if you need to build something similar for another framework.
