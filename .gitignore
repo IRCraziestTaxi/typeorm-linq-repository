@@ -1,6 +1,7 @@
 **/node_modules/**
 **/*.log
 **/*.js
+**/*.js.map
 !jasmine-ts.helper.js
 **/*.d.ts
 ormconfig.json

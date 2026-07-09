@@ -76,11 +76,17 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
     /**
      * Orders the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
+     * @param options Options for ordering results.
+     * 
+     * NOTE: `nullsFirst` is not supported in MySQL.
      */
     orderBy(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P>;
     /**
      * Orders the query on the specified property in descending order.
      * @param propertySelector Property selection lambda for property on which to sort.
+     * @param options Options for ordering results.
+     * 
+     * NOTE: `nullsFirst` is not supported in MySQL.
      */
     orderByDescending(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P>;
     /**
@@ -106,11 +112,17 @@ export interface IQueryBase<T extends EntityBase, R extends T | T[], P = T> {
     /**
      * Adds a subsequent ordering to the query on the specified property in ascending order.
      * @param propertySelector Property selection lambda for property on which to sort.
+     * @param options Options for ordering results.
+     * 
+     * NOTE: `nullsFirst` is not supported in MySQL.
      */
     thenBy(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P>;
     /**
      * Adds a subsequent ordering to the query on the specified property in descending order.
      * @param propertySelector Property selection lambda for property on which to sort.
+     * @param options Options for ordering results.
+     * 
+     * NOTE: `nullsFirst` is not supported in MySQL.
      */
     thenByDescending(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P>;
     /**

@@ -1,10 +1,11 @@
+import { DataSource } from "typeorm";
 import { LinqRepository } from "../../../src/repository/LinqRepository";
 import { UserProfileAttribute } from "../../../test/entities/user-profile-attribute.entity";
 
-export async function seedUserProfileAttributes(): Promise<void> {
+export async function seedUserProfileAttributes(dataSource: DataSource): Promise<void> {
     console.log("Seeding user profile attributes.");
 
-    const userProfileAttributeRepository = new LinqRepository(UserProfileAttribute);
+    const userProfileAttributeRepository = new LinqRepository(dataSource, UserProfileAttribute);
 
     const userProfileAttributes: UserProfileAttribute[] = [
         {
@@ -14,7 +15,7 @@ export async function seedUserProfileAttributes(): Promise<void> {
         }
     ];
 
-    await userProfileAttributeRepository.typeormRepository.insert(userProfileAttributes);
+    await userProfileAttributeRepository.typeormRepository.upsert(userProfileAttributes, ["id"]);
 
     console.log("Done seeding user profile attributes.");
 }

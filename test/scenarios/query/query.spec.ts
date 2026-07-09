@@ -221,6 +221,95 @@ describe("Query", () => {
             .toBe(2);
     });
 
+    it("uses chained joins properly", async () => {
+        const artists = await artistRepository
+            .getAll()
+            .join(a => a.songs)
+            .thenJoin(s => s.genre)
+            .where(g => g.id)
+            .equal(1);
+
+        expect(artists.length)
+            .toBe(3);
+    });
+
+    it("properly resets currently selected entity type after isolated where", async () => {
+        const songs = await songRepository
+            .getAll()
+            .isolatedWhere(q => q
+                .where(s => s.name)
+                .equal("Rock Song")
+                .or(s => s.artist.name)
+                .equal("Artist Three")
+            )
+            .or(s => s.genreId)
+            .equal(3);
+
+        expect(songs.length)
+            .toBe(5);
+    });
+
+    // This is not possible at this time because TypeORM does not acknowledge HAVING clauses in Brackets.
+    // If TypeORM adds support for HAVING clauses in Brackets, revisit at that time.
+    // it("handles multiple *Any() inside of multiple isolated*() groupings", async () => {
+    //     const songs = await songRepository
+    //         .getAll()
+    //         .isolatedWhere(q => q
+    //             .isolatedWhere(qq => qq
+    //                 .whereAny(
+    //                     s => s.genre,
+    //                     g => g.id,
+    //                     g => g.id
+    //                 )
+    //                 .equal(1)
+    //             )
+    //             .isolatedOr(qq => qq
+    //                 .whereAny(
+    //                     s => s.genre,
+    //                     g => g.id,
+    //                     g => g.id
+    //                 )
+    //                 .equal(2)
+    //                 .andAny(
+    //                     s => s.artist,
+    //                     a => a.id,
+    //                     a => a.id
+    //                 )
+    //                 .equal(2)
+    //             )
+    //         )
+    //         .groupBy(s => s.id)
+    //         .thenGroupBy(s => s.artistId)
+    //         .thenGroupBy(s => s.genreId);
+
+    //     expect(songs.length)
+    //         .toBe(4);
+    // });
+
+    it("handles single property in orderBy", async () => {
+        const songs = await songRepository
+            .getAll()
+            .where(s => s.genreId)
+            .notEqual(3)
+            .orderBy(s => s.name);
+
+        expect(songs.length)
+            .not
+            .toBe(0);
+    });
+
+    it("handles chained relations in orderBy", async () => {
+        const songs = await songRepository
+            .getAll()
+            .where(s => s.genreId)
+            .notEqual(3)
+            .orderBy(s => s.genre.name);
+
+        expect(songs.length)
+            .not
+            .toBe(0);
+    });
+
     afterAll(async () => {
         await dataSource.destroy();
     });

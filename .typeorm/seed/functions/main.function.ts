@@ -10,11 +10,11 @@ export async function main(): Promise<void> {
 
     const dataSource = await getTypeormDataSource();
 
-    await seedGenres();
-    await seedArtists();
-    await seedSongs();
-    await seedUsers();
-    await seedUserProfileAttributes();
+    await seedGenres(dataSource);
+    await seedArtists(dataSource);
+    await seedSongs(dataSource);
+    await seedUsers(dataSource);
+    await seedUserProfileAttributes(dataSource);
 
     console.log("Closing connection.");
 

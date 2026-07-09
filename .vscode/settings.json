@@ -2,6 +2,7 @@
     "files.exclude": {
         "**/*.d.ts": true,
         "src/**/*.js": true,
+        "src/**/*.js.map": true,
         "index.js": true
     },
     "typescript.tsdk": "node_modules/typescript/lib"

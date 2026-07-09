@@ -1,10 +1,11 @@
+import { DataSource } from "typeorm";
 import { LinqRepository } from "../../../src/repository/LinqRepository";
 import { Genre } from "../../../test/entities/genre.entity";
 
-export async function seedGenres(): Promise<void> {
+export async function seedGenres(dataSource: DataSource): Promise<void> {
     console.log("Seeding genres.");
 
-    const genreRepository = new LinqRepository(Genre);
+    const genreRepository = new LinqRepository(dataSource, Genre);
 
     const genres: Genre[] = [
         {
@@ -21,7 +22,7 @@ export async function seedGenres(): Promise<void> {
         }
     ];
 
-    await genreRepository.typeormRepository.insert(genres);
+    await genreRepository.typeormRepository.upsert(genres, ["id"]);
 
     console.log("Done seeding genres.");
 }

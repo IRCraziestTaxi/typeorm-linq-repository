@@ -1,5 +1,5 @@
 import { nameof } from "ts-simple-nameof";
-import { Brackets, ObjectLiteral, SelectQueryBuilder, WhereExpression } from "typeorm";
+import { Brackets, ObjectLiteral, SelectQueryBuilder, WhereExpressionBuilder } from "typeorm";
 import { SqlConstants } from "../constants/SqlConstants";
 import { QueryMode } from "../enums/QueryMode";
 import { QueryWhereType } from "../enums/QueryWhereType";
@@ -45,9 +45,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     public constructor(
         queryBuilder: SelectQueryBuilder<T>,
         getAction: () => Promise<R>,
-        includeAliasHistory: string[] = []
+        includeAliasHistory: string[] = [],
+        duplicateAliasHistory: string[] = []
     ) {
-        this._duplicateAliasHistory = [];
+        this._duplicateAliasHistory = duplicateAliasHistory;
         this._getAction = getAction;
         this._includeAliasHistory = includeAliasHistory;
         this._initialAlias = queryBuilder.alias;
@@ -362,12 +363,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     }
 
     public orderBy(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P> {
-        const propertyName: string = nameof<P>(propertySelector);
-        const orderProperty: string = `${this._lastAlias}.${propertyName}`;
-
         return this.completeOrderBy(
             this._query.orderBy,
-            [orderProperty, "ASC"],
+            propertySelector,
+            "ASC",
             options
         );
     }
@@ -375,12 +374,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     public orderByDescending(
         propertySelector: (obj: P) => any, options?: QueryOrderOptions
     ): IQuery<T, R, P> {
-        const propertyName: string = nameof<P>(propertySelector);
-        const orderProperty: string = `${this._lastAlias}.${propertyName}`;
-
         return this.completeOrderBy(
             this._query.orderBy,
-            [orderProperty, "DESC"],
+            propertySelector,
+            "DESC",
             options
         );
     }
@@ -455,12 +452,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
     }
 
     public thenBy(propertySelector: (obj: P) => any, options?: QueryOrderOptions): IQuery<T, R, P> {
-        const propertyName: string = nameof<P>(propertySelector);
-        const orderProperty: string = `${this._lastAlias}.${propertyName}`;
-
         return this.completeOrderBy(
             this._query.addOrderBy,
-            [orderProperty, "ASC"],
+            propertySelector,
+            "ASC",
             options
         );
     }
@@ -469,12 +464,10 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         propertySelector: (obj: P) => any,
         options?: QueryOrderOptions
     ): IQuery<T, R, P> {
-        const propertyName: string = nameof<P>(propertySelector);
-        const orderProperty: string = `${this._lastAlias}.${propertyName}`;
-
         return this.completeOrderBy(
             this._query.addOrderBy,
-            [orderProperty, "DESC"],
+            propertySelector,
+            "DESC",
             options
         );
     }
@@ -641,7 +634,6 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         // Keep up with the last alias in order to restore it after joinMultipleProperties.
         const lastAlias: string = this._lastAlias;
 
-        // If accessing multiple properties, join relationships using an INNER JOIN.
         const whereProperty: string = this.joinMultipleProperties(whereProperties, joinAction);
 
         // A third parameter on the query parameters indicates additional join conditions.
@@ -675,7 +667,7 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         return query.query;
     }
 
-    private compileQueryParts<PT>(queryParts: IQueryBuilderPart<PT>[], builder: WhereExpression): void {
+    private compileQueryParts<PT>(queryParts: IQueryBuilderPart<PT>[], builder: WhereExpressionBuilder): void {
         if (queryParts.length) {
             for (const queryPart of queryParts) {
                 queryPart.queryAction.call(builder, ...queryPart.queryParams);
@@ -697,9 +689,24 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
 
     private completeOrderBy(
         orderAction: (...params: any[]) => SelectQueryBuilder<T>,
-        orderParams: [string, "ASC" | "DESC"],
+        propertySelector: (obj: P) => any,
+        orderDir: "ASC" | "DESC",
         options?: QueryOrderOptions
     ): IQuery<T, R, P> {
+        const whereProperties: string = nameof<P>(propertySelector);
+
+        // Keep up with the last alias in order to restore it after joinMultipleProperties.
+        const lastAlias: string = this._lastAlias;
+
+        // Fall back to LEFT JOIN if joining multiple properties during an ORDER BY.
+        // If a relationship is already joined, the previously added join will not be overridden.
+        const orderProperty: string = this.joinMultipleProperties(whereProperties, this._query.leftJoin);
+
+        const orderParams = [`${this._lastAlias}.${orderProperty}`, orderDir];
+
+        // Restore the last alias after joinMultipleProperties and ORDER BY params.
+        this._lastAlias = lastAlias;
+
         if (options) {
             if (typeof (options.nullsFirst) === "boolean") {
                 orderParams.push(options.nullsFirst ? "NULLS FIRST" : "NULLS LAST");
@@ -956,10 +963,11 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
         const query: Query<T, R, IS> = <Query<T, R, IS>><any>conditions(<IQuery<T, R, P>><any>new Query(
             this._query,
             this._getAction,
-            this._includeAliasHistory
+            this._includeAliasHistory,
+            this._duplicateAliasHistory
         ));
 
-        // Do not include joins in bracketed condition; perform those in the outer query.
+        // Do not include joins in bracketed conditions; perform those in the outer query.
         const conditionParts: IQueryBuilderPart<T>[] =
             query
                 .queryParts
@@ -971,22 +979,65 @@ export class Query<T extends EntityBase, R extends T | T[], P = T>
                     // tslint:disable-next-line: triple-equals
                     || qp.queryAction == query.query.orWhere
                 );
+        // See notes on commented out code below.
+        // const havingConditionParts: IQueryBuilderPart<T>[] =
+        //     query
+        //         .queryParts
+        //         .filter(qp =>
+        //             // tslint:disable-next-line: triple-equals
+        //             qp.queryAction == query.query.having
+        //             // tslint:disable-next-line: triple-equals
+        //             || qp.queryAction == query.query.andHaving
+        //             // tslint:disable-next-line: triple-equals
+        //             || qp.queryAction == query.query.orHaving
+        //         );
 
         // Perform joins in the outer query.
         const joinParts: IQueryBuilderPart<T>[] =
             query
                 .queryParts
-                .filter(qp => conditionParts.indexOf(qp) < 0);
+                .filter(qp =>
+                    conditionParts.indexOf(qp) < 0
+                    // See notes on commented out code below.
+                    // && havingConditionParts.indexOf(qp) < 0
+                );
         this._queryParts.push(...joinParts);
 
-        this._queryParts.push(new QueryBuilderPart(
-            conditionAction,
-            [
-                new Brackets(qb => {
-                    this.compileQueryParts(conditionParts, qb);
-                })
-            ]
-        ));
+        if (conditionParts.length) {
+            this._queryParts.push(new QueryBuilderPart(
+                conditionAction,
+                [
+                    new Brackets(qb => {
+                        this.compileQueryParts(conditionParts, qb);
+                    })
+                ]
+            ));
+        }
+
+        // This is not possible at this time because TypeORM does not acknowledge HAVING clauses in Brackets.
+        // If TypeORM adds support for HAVING clauses in Brackets, revisit at that time.
+        // if (havingConditionParts.length) {
+        //     let havingConditionAction: (...params: any[]) => SelectQueryBuilder<T>;
+
+        //     if (conditionAction === this._query.andWhere) {
+        //         havingConditionAction = this._query.andHaving;
+        //     }
+        //     else if (conditionAction === this._query.orWhere) {
+        //         havingConditionAction = this._query.orHaving;
+        //     }
+        //     else {
+        //         havingConditionAction = this._query.having;
+        //     }
+
+        //     this._queryParts.push(new QueryBuilderPart(
+        //         havingConditionAction,
+        //         [
+        //             (qb: WhereExpressionBuilder) => {
+        //                 this.compileQueryParts(havingConditionParts, qb);
+        //             }
+        //         ]
+        //     ));
+        // }
 
         return <IQuery<T, R, IP>><any>this;
     }
