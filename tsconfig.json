@@ -5,6 +5,7 @@
         "lib": [
             "es6"
         ],
+        "sourceMap": true,
         "resolveJsonModule": true,
         "noImplicitAny": true,
         "emitDecoratorMetadata": true,

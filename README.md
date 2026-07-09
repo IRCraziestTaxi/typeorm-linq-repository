@@ -7,6 +7,19 @@ Two new libraries, [typeorm-linq-repository-testing](https://github.com/IRCrazie
 [typeorm-linq-repository-testing-nestjs](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing-nestjs) contains a more "complete" example of usage since it has more practical usage in the context of another framework, but [typeorm-linq-repository-testing](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing) provides the raw components if you need to build something similar for another framework.
 
 ### Latest Changes
+As of version 2.0.3:
+
+Added support for chained properties in ordering methods. Before this update, the following resulted in an error:
+
+```ts
+userRepository
+    .getAll()
+    .include(u => u.profile)
+    .orderBy(u => u.profile.displayName);
+```
+
+Now, chained properties can safely be used in `orderBy`, `thenBy`, `orderByDescending`, and `thenByDescending`.
+
 As of version 2.0.0:
 
 Due to [breaking changes in TypeORM](https://github.com/typeorm/typeorm/issues/7428), namely the removal of `getConnectionManager`, the constructor for `LinqRepository` now requires the TypeORM `DataSource` in addition to the entity model. Likewise, since individually managed `DataSource` objects replace the `ConnectionManager` paradigm, `RepositoryOptions` now no longer contains the `connectionName` property.

@@ -11,7 +11,12 @@ import { ComparableValue } from "../../types/ComparableValue";
 export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends IQueryBase<T, R, P> {
     /**
      * Checks whether any items exist in the specified relationship (used after whereNone or whereAny).
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
@@ -21,7 +26,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     ): IQuery<T, R, T>;
     /**
      * Checks whether any items that meet certain criteria exist in the specified relationship (used after whereNone or whereAny).
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare
@@ -33,7 +43,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     ): IComparableQuery<T, R, S>;
     /**
      * Checks whether no items exist in the specified relationship (used after whereNone or whereAny).
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
@@ -43,7 +58,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     ): IQuery<T, R, T>;
     /**
      * Checks whether no items that meet certain criteria exist in the specified relationship (used after whereNone or whereAny).
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare.
@@ -60,7 +80,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     isolatedWhere<S extends Object>(where: (query: IQuery<T, R, T>) => IQuery<T, R, S>): IQuery<T, R, T>;
     /**
      * Checks whether any items exist in the specified relationship (used after whereNone or whereAny).
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
@@ -70,7 +95,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     ): IQuery<T, R, T>;
     /**
      * Checks whether any items that meet certain criteria exist in the specified relationship (used after whereNone or whereAny).
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare.
@@ -82,7 +112,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     ): IComparableQuery<T, R, S>;
     /**
      * Checks whether no items exist in the specified relationship (used after whereNone or whereAny).
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
@@ -92,7 +127,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     ): IQuery<T, R, T>;
     /**
      * Checks whether no items that meet certain criteria exist in the specified relationship (used after whereNone or whereAny).
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare
@@ -115,7 +155,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     where<S extends Object>(propertySelector: (obj: T) => S): IComparableQuery<T, R, T>;
     /**
      * Checks whether any items exist in the specified relationship.
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
@@ -125,7 +170,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     ): IQuery<T, R, T>;
     /**
      * Checks whether any items that meet certain criteria exist in the specified relationship.
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare.
@@ -137,7 +187,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     ): IComparableQuery<T, R, S>;
     /**
      * Checks whether no items exist in the specified relationship.
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
@@ -147,7 +202,12 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
     ): IQuery<T, R, T>;
     /**
      * Checks whether no items that meet certain criteria exist in the specified relationship.
-     * NOTE: This method requires an arbitrary groupBy call (for instance, the base entity's primary key).
+     * 
+     * NOTE: Using `*Any` or `*None` calls inside of multiple different `isolated*` calls will result in unexpected behavior.
+     * Grouping of `*Any` or `*None` calls is not supported at this time.
+     * 
+     * NOTE: Since this method uses a HAVING clause under the hood,
+     * this method may require an arbitrary groupBy call (for instance, the base entity's primary key).
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare

@@ -4,6 +4,8 @@
 export interface QueryOrderOptions {
     /**
      * Whether to put null values first when ordering query results.
+     * 
+     * NOTE: Not supported in MySQL.
      */
     nullsFirst?: boolean;
 }
