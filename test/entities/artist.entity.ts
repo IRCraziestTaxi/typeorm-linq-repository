@@ -4,11 +4,11 @@ import { Song } from "./song.entity";
 @Entity()
 export class Artist {
     @PrimaryColumn()
-    public id: number;
+    public id!: number;
 
     @Column({ length: 100, nullable: false })
-    public name: string;
+    public name!: string;
 
-    @OneToMany(() => Song, a => a.artist)
+    @OneToMany<Song>(() => Song, s => s.artist)
     public songs?: Song[];
 }

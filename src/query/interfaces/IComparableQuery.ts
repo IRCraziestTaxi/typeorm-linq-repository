@@ -1,6 +1,7 @@
 import { ComparableValue } from "../../types/ComparableValue";
 import { EntityBase } from "../../types/EntityBase";
 import { JoinedEntityType } from "../../types/JoinedEntityType";
+import { Nullable } from "../../types/Nullable";
 import { QueryConditionOptions } from "../../types/QueryConditionOptions";
 import { IComparableQueryBase } from "./IComparableQueryBase";
 import { IJoinedComparableQuery } from "./IJoinedComparableQuery";
@@ -10,7 +11,7 @@ import { ISelectQuery } from "./ISelectQuery";
 /**
  * Finalizes the comparison portion of a Query operation or joins a relation or foreign entity against which to compare a value.
  */
-export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T> extends IComparableQueryBase<T, R, P> {
+export interface IComparableQuery<T extends EntityBase, R extends Nullable<T> | T[], P = T> extends IComparableQueryBase<T, R, P> {
     /**
      * Finds results where the specified property starts with the provided string (using LIKE "string%").
      * @param value The value against which to compare.
@@ -98,7 +99,7 @@ export interface IComparableQuery<T extends EntityBase, R extends T | T[], P = T
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to join, ex. x => x.prop
      */
-    join<S extends Object>(propertySelector: (obj: T) => JoinedEntityType<S>): IJoinedComparableQuery<T, R, S>;
+    join<S extends EntityBase>(propertySelector: (obj: T) => JoinedEntityType<S>): IJoinedComparableQuery<T, R, S>;
     /**
      * Determines whether the previously selected property differs from the specified value.
      * @param value The value against which to compare.

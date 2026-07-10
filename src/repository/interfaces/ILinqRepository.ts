@@ -1,6 +1,7 @@
 import { Repository, SelectQueryBuilder } from "typeorm";
 import { IQuery } from "../../query/interfaces/IQuery";
 import { EntityBase } from "../../types/EntityBase";
+import { Nullable } from "../../types/Nullable";
 
 /**
  * Base repository operations for TypeORM entities.
@@ -31,12 +32,14 @@ export interface ILinqRepository<T extends EntityBase> {
     /**
      * Finds one entity with the specified ID.
      * @param id The ID of the entity to find.
+     * @returns The entity if it was found or `null` otherwise.
      */
-    getById(id: number | string): IQuery<T, T>;
+    getById(id: number | string): IQuery<T, Nullable<T>>;
     /**
      * Returns a Query returning one entity.
+     * @returns The entity if it was found or `null` otherwise.
      */
-    getOne(): IQuery<T, T>;
+    getOne(): IQuery<T, Nullable<T>>;
     /**
      * Upserts one or more entities in the database.
      * Note: Now an alias for upsert.

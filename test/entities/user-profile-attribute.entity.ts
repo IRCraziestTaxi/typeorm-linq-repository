@@ -10,15 +10,15 @@ export class UserProfileAttribute {
     public genre?: Genre;
 
     @Column({ nullable: false })
-    public genreId: number;
+    public genreId!: number;
 
     @PrimaryColumn()
-    public id: number;
+    public id!: number;
 
-    @ManyToOne(() => User, u => u.profileAttributes)
+    @ManyToOne<User>(() => User, u => u.profileAttributes)
     @JoinColumn({ name: nameof<UserProfileAttribute>(upa => upa.userId) })
     public user?: User;
 
     @Column({ nullable: false })
-    public userId: number;
+    public userId!: number;
 }
