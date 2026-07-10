@@ -4,7 +4,5 @@
     ],
     "helpers": [
         "test/jasmine-ts.helper.js"
-    ],
-    "stopSpecOnExpectationFailure": false,
-    "random": false
+    ]
 }

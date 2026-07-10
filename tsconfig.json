@@ -1,15 +1,20 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es6",
+        "target": "ES2020",
         "lib": [
-            "es6"
+            "ES2023",
+            "ESNext.Disposable"
         ],
         "sourceMap": true,
         "resolveJsonModule": true,
         "noImplicitAny": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "rootDir": "."
+        "rootDir": ".",
+        "types": [
+            "jasmine",
+            "node"
+        ]
     }
 }

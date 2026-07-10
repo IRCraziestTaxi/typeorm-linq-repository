@@ -5,23 +5,23 @@ import { Genre } from "./genre.entity";
 
 @Entity()
 export class Song {
-    @ManyToOne(() => Artist, a => a.songs)
+    @ManyToOne<Artist>(() => Artist, a => a.songs)
     @JoinColumn({ name: nameof<Song>(s => s.artistId) })
     public artist?: Artist;
 
     @Column({ nullable: false })
-    public artistId: number;
+    public artistId!: number;
 
     @ManyToOne(() => Genre)
     @JoinColumn({ name: nameof<Song>(s => s.genreId) })
     public genre?: Genre;
 
     @Column({ nullable: false })
-    public genreId: number;
+    public genreId!: number;
 
     @PrimaryColumn()
-    public id: number;
+    public id!: number;
 
     @Column({ length: 100, nullable: false })
-    public name: string;
+    public name!: string;
 }

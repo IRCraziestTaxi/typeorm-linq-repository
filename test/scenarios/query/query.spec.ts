@@ -70,13 +70,13 @@ describe("Query", () => {
     it("includes entities", async () => {
         const song = await songRepository
             .getById(1)
-            .include(s => s.artist)
-            .include(s => s.genre);
+            .include(s => s.artist!)
+            .include(s => s.genre!);
 
-        expect(song.artist)
+        expect(song!.artist)
             .not
             .toBeUndefined();
-        expect(song.genre)
+        expect(song!.genre)
             .not
             .toBeUndefined();
     });
@@ -116,7 +116,7 @@ describe("Query", () => {
     it("joins mapped relations (without parens)", async () => {
         const artists = await artistRepository
             .getAll()
-            .where(a => a.songs.map(s => s.genreId))
+            .where(a => a.songs!.map(s => s.genreId))
             .equal(1);
 
         expect(artists.length)
@@ -127,7 +127,7 @@ describe("Query", () => {
         const artists = await artistRepository
             .getAll()
             // tslint:disable-next-line: arrow-parens
-            .where((a) => a.songs.map((s) => s.genreId))
+            .where((a) => a.songs!.map((s) => s.genreId))
             .equal(1);
 
         expect(artists.length)
@@ -137,7 +137,7 @@ describe("Query", () => {
     it("filters where any (without condition)", async () => {
         const artists = await artistRepository
             .getAll()
-            .whereAny(a => a.songs, s => s.id)
+            .whereAny(a => a.songs!, s => s.id)
             // Must add all columns to group by to mitigate
             // "incompatible with sql_mode=only_full_group_by" errors in mysql...
             .reset()
@@ -151,7 +151,7 @@ describe("Query", () => {
     it("filters where any (with condition)", async () => {
         const artists = await artistRepository
             .getAll()
-            .whereAny(a => a.songs, s => s.id, s => s.genreId)
+            .whereAny(a => a.songs!, s => s.id, s => s.genreId)
             .equal(2)
             // Must add all columns to group by to mitigate
             // "incompatible with sql_mode=only_full_group_by" errors in mysql...
@@ -166,7 +166,7 @@ describe("Query", () => {
     it("filters where none (without condition)", async () => {
         const artists = await artistRepository
             .getAll()
-            .whereNone(a => a.songs, s => s.id)
+            .whereNone(a => a.songs!, s => s.id)
             // Must add all columns to group by to mitigate
             // "incompatible with sql_mode=only_full_group_by" errors in mysql...
             .reset()
@@ -180,7 +180,7 @@ describe("Query", () => {
     it("filters where none (with condition)", async () => {
         const artists = await artistRepository
             .getAll()
-            .whereNone(a => a.songs, s => s.id, s => s.genreId)
+            .whereNone(a => a.songs!, s => s.id, s => s.genreId)
             .equal(2)
             // Must add all columns to group by to mitigate
             // "incompatible with sql_mode=only_full_group_by" errors in mysql...
@@ -195,23 +195,23 @@ describe("Query", () => {
     it("works with inner queries", async () => {
         const songs = await songRepository
             .getAll()
-            .join(s => s.artist)
+            .join(s => s.artist!)
             .where(a => a.id)
             .equal(1)
             .where(s => s.id)
             .notInSelected(
                 songRepository
                     .getAll()
-                    .join(s => s.artist)
+                    .join(s => s.artist!)
                     .where(a => a.id)
                     .equal(1)
                     .from(UserProfileAttribute)
-                    .thenJoin(upa => upa.genre)
+                    .thenJoin(upa => upa.genre!)
                     .where(g => g.id)
-                    .join(s => s.genre)
+                    .join(s => s.genre!)
                     .equalJoined(g => g.id)
                     .from(UserProfileAttribute)
-                    .thenJoin(upa => upa.user)
+                    .thenJoin(upa => upa.user!)
                     .where(u => u.id)
                     .equal(1)
                     .select(s => s.id)
@@ -224,8 +224,8 @@ describe("Query", () => {
     it("uses chained joins properly", async () => {
         const artists = await artistRepository
             .getAll()
-            .join(a => a.songs)
-            .thenJoin(s => s.genre)
+            .join(a => a.songs!)
+            .thenJoin(s => s.genre!)
             .where(g => g.id)
             .equal(1);
 
@@ -239,7 +239,7 @@ describe("Query", () => {
             .isolatedWhere(q => q
                 .where(s => s.name)
                 .equal("Rock Song")
-                .or(s => s.artist.name)
+                .or(s => s.artist!.name)
                 .equal("Artist Three")
             )
             .or(s => s.genreId)
@@ -303,7 +303,7 @@ describe("Query", () => {
             .getAll()
             .where(s => s.genreId)
             .notEqual(3)
-            .orderBy(s => s.genre.name);
+            .orderBy(s => s.genre!.name);
 
         expect(songs.length)
             .not

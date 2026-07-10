@@ -1,14 +1,15 @@
+import { ComparableValue } from "../../types/ComparableValue";
 import { EntityBase } from "../../types/EntityBase";
+import { JoinedEntityType } from "../../types/JoinedEntityType";
+import { Nullable } from "../../types/Nullable";
 import { IComparableQuery } from "./IComparableQuery";
 import { IQueryBase } from "./IQueryBase";
 import { ISelectQuery } from "./ISelectQuery";
-import { JoinedEntityType } from "../../types/JoinedEntityType";
-import { ComparableValue } from "../../types/ComparableValue";
 
 /**
  * Basic query operations for Queries that are not in Comparable mode.
  */
-export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends IQueryBase<T, R, P> {
+export interface IQuery<T extends EntityBase, R extends Nullable<T> | T[], P = T> extends IQueryBase<T, R, P> {
     /**
      * Checks whether any items exist in the specified relationship (used after whereNone or whereAny).
      * 
@@ -20,7 +21,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
-    andAny<S extends Object>(
+    andAny<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue
     ): IQuery<T, R, T>;
@@ -36,7 +37,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare
      */
-    andAny<S extends Object>(
+    andAny<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue,
         conditionPropSelector: (obj: S) => ComparableValue
@@ -52,7 +53,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
-    andNone<S extends Object>(
+    andNone<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue
     ): IQuery<T, R, T>;
@@ -68,7 +69,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare.
      */
-    andNone<S extends Object>(
+    andNone<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue,
         conditionPropSelector: (obj: S) => ComparableValue
@@ -77,7 +78,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * Isolates a group of conditions into one WHERE clause.
      * @param where The Query representing the WHERE conditions to group.
      */
-    isolatedWhere<S extends Object>(where: (query: IQuery<T, R, T>) => IQuery<T, R, S>): IQuery<T, R, T>;
+    isolatedWhere<S extends EntityBase>(where: (query: IQuery<T, R, T>) => IQuery<T, R, S>): IQuery<T, R, T>;
     /**
      * Checks whether any items exist in the specified relationship (used after whereNone or whereAny).
      * 
@@ -89,7 +90,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
-    orAny<S extends Object>(
+    orAny<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue
     ): IQuery<T, R, T>;
@@ -105,7 +106,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare.
      */
-    orAny<S extends Object>(
+    orAny<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue,
         conditionPropSelector: (obj: S) => ComparableValue
@@ -121,7 +122,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
-    orNone<S extends Object>(
+    orNone<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue
     ): IQuery<T, R, T>;
@@ -137,7 +138,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare
      */
-    orNone<S extends Object>(
+    orNone<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue,
         conditionPropSelector: (obj: S) => ComparableValue
@@ -152,7 +153,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @type {S} The type of the joined navigation property.
      * @param propertySelector Property selection lambda for property to compare.
      */
-    where<S extends Object>(propertySelector: (obj: T) => S): IComparableQuery<T, R, T>;
+    where<S extends EntityBase>(propertySelector: (obj: T) => S): IComparableQuery<T, R, T>;
     /**
      * Checks whether any items exist in the specified relationship.
      * 
@@ -164,7 +165,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
-    whereAny<S extends Object>(
+    whereAny<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue
     ): IQuery<T, R, T>;
@@ -180,7 +181,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare.
      */
-    whereAny<S extends Object>(
+    whereAny<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue,
         conditionPropSelector: (obj: S) => ComparableValue
@@ -196,7 +197,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationSelector The relationship to check for items.
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      */
-    whereNone<S extends Object>(
+    whereNone<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue
     ): IQuery<T, R, T>;
@@ -212,7 +213,7 @@ export interface IQuery<T extends EntityBase, R extends T | T[], P = T> extends 
      * @param relationCountPropSelector Arbitrary primitive property on which to count relation items.
      * @param conditionPropSelector Property on which to compare
      */
-    whereNone<S extends Object>(
+    whereNone<S extends EntityBase>(
         relationSelector: (obj: T) => JoinedEntityType<S>,
         relationCountPropSelector: (obj: S) => ComparableValue,
         conditionPropSelector: (obj: S) => ComparableValue

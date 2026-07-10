@@ -7,6 +7,12 @@ Two new libraries, [typeorm-linq-repository-testing](https://github.com/IRCrazie
 [typeorm-linq-repository-testing-nestjs](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing-nestjs) contains a more "complete" example of usage since it has more practical usage in the context of another framework, but [typeorm-linq-repository-testing](https://github.com/IRCraziestTaxi/typeorm-linq-repository-testing) provides the raw components if you need to build something similar for another framework.
 
 ### Latest Changes
+As of version 2.1.0:
+
+Version 2.1.0 now has peer dependency support for TypeORM v1.0.0+.
+
+Additionally, as part of a much-needed TypeScript update, the return type of `getById` and `getOne` now properly convey TypeORM's underlying `getOne` method's return type of `T | null` (whereas before their return type was just `T`). Therefore, you may experience minor breaking changes if you were not performing null checks on entities fetched via `getById` or `getOne` prior to updating to 2.1.0+.
+
 As of version 2.0.3:
 
 Added support for chained properties in ordering methods. Before this update, the following resulted in an error:

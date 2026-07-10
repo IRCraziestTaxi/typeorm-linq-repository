@@ -4,6 +4,7 @@ import { IQuery } from "../query/interfaces/IQuery";
 import { Query } from "../query/Query";
 import { EntityBase } from "../types/EntityBase";
 import { EntityConstructor } from "../types/EntityConstructor";
+import { Nullable } from "../types/Nullable";
 import { RepositoryOptions } from "../types/RepositoryOptions";
 import { ILinqRepository } from "./interfaces/ILinqRepository";
 
@@ -99,11 +100,11 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
         return query;
     }
 
-    public getById(id: number | string): IQuery<T, T> {
+    public getById(id: number | string): IQuery<T, Nullable<T>> {
         const alias: string = "entity";
         let queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder(alias);
         queryBuilder = queryBuilder.where(`${alias}.${this._primaryKeyName} = :id`, { id });
-        const query: IQuery<T, T> = new Query(
+        const query: IQuery<T, Nullable<T>> = new Query(
             queryBuilder,
             queryBuilder.getOne
         );
@@ -111,9 +112,9 @@ export class LinqRepository<T extends EntityBase> implements ILinqRepository<T> 
         return query;
     }
 
-    public getOne(): IQuery<T, T> {
+    public getOne(): IQuery<T, Nullable<T>> {
         const queryBuilder: SelectQueryBuilder<T> = this.createQueryBuilder("entity");
-        const query: IQuery<T, T> = new Query(
+        const query: IQuery<T, Nullable<T>> = new Query(
             queryBuilder,
             queryBuilder.getOne
         );
